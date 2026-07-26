@@ -1,0 +1,55 @@
+{
+  "key": "JOURNEY_VIP_RETENTION",
+  "name": "VIP Retention - High Value At Risk",
+  "description": "Proactive, high-touch retention play for Data Cloud's High_Value_At_Risk segment (lifetime spend >= $5,000, no order in 90-270 days). Distinct from the general Winback journey: higher-value incentive, single touch, and a concierge contact option rather than an automated series.",
+  "version": 1,
+  "entrySource": {
+    "entrySourceType": "SalesforceDataExtension",
+    "dataExtensionKey": "DE_DATACLOUD_SEGMENT_HIGHVALUEATRISK",
+    "schedule": { "type": "Recurring", "interval": 1, "unit": "Days", "startTime": "07:00", "timezone": "America/New_York" }
+  },
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "NoReentryUntilExit",
+  "exitCriteria": {
+    "type": "SQLQuery",
+    "query": "SELECT SubscriberKey FROM ShopStyle_Subscribers WHERE SubscriberStatus IN ('Unsubscribed', 'Sunset') OR EmailOptIn = 0"
+  },
+  "activities": [
+    {
+      "key": "EMAIL-VIP-OUTREACH",
+      "type": "EmailSend",
+      "name": "VIP Concierge Outreach",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_VIP_RETENTION",
+        "subjectLine": "A personal note from ShopStyle",
+        "notes": "Offers a $50 credit + a direct concierge contact link, not a generic percent-off code, reflecting the individual's calculated lifetime value."
+      },
+      "outcomes": [{ "next": "WAIT-14-DAYS" }]
+    },
+    {
+      "key": "WAIT-14-DAYS",
+      "type": "Wait",
+      "name": "Wait 14 Days",
+      "configurationArguments": { "waitDuration": 14, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-PURCHASED" }]
+    },
+    {
+      "key": "DECISION-PURCHASED",
+      "type": "MultiCriteriaDecision",
+      "name": "Purchased Since Outreach?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "Purchased", "criteria": "EXISTS(ShopStyle_Orders WHERE SubscriberKey = Contact.SubscriberKey AND OrderDate >= Activity.EMAIL-VIP-OUTREACH.SendDate)" },
+          { "name": "NotPurchased", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "Purchased", "next": "EXIT-RETAINED" },
+        { "branchName": "NotPurchased", "next": "EXIT-ESCALATE-CONCIERGE" }
+      ]
+    },
+    { "key": "EXIT-RETAINED", "type": "JourneyExit", "name": "Exit - Retained", "outcomes": [] },
+    { "key": "EXIT-ESCALATE-CONCIERGE", "type": "JourneyExit", "name": "Exit - Escalate to Concierge Team for Manual Outreach", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "EMAIL-VIP-OUTREACH" }
+}
