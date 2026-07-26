@@ -1,0 +1,19 @@
+{
+  "name": "ShopStyle_Loyalty",
+  "customerKey": "DE_SHOPSTYLE_LOYALTY",
+  "description": "1:1 loyalty program state — tier, points, anniversary — computed nightly by automation-studio/sql loyalty tier automation.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "None" },
+  "fields": [
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "LoyaltyMemberId", "type": "Text", "length": 40 },
+    { "name": "CurrentTier", "type": "Text", "length": 20, "defaultValue": "Bronze", "notes": "Bronze | Silver | Gold | Platinum" },
+    { "name": "PointsBalance", "type": "Number", "defaultValue": "0" },
+    { "name": "PointsToNextTier", "type": "Number" },
+    { "name": "TrailingTwelveMonthSpend", "type": "Decimal", "scale": 2 },
+    { "name": "TierEffectiveDate", "type": "Date" },
+    { "name": "TierExpirationDate", "type": "Date" },
+    { "name": "EnrollmentDate", "type": "Date" },
+    { "name": "LastRecalculatedDate", "type": "Date" }
+  ]
+}

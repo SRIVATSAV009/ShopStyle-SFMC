@@ -1,0 +1,15 @@
+{
+  "name": "Shared_CustomerIdentityBridge",
+  "customerKey": "DE_SHARED_IDENTITYBRIDGE",
+  "description": "Maps Salesforce Data Cloud Unified Individual ID to each Child BU's local SubscriberKey, enabling cross-channel identity resolution. See data-cloud/identity-resolution/.",
+  "isSendable": false,
+  "sharedTo": ["5000011", "5000012", "5000013"],
+  "retentionPolicy": { "type": "None" },
+  "fields": [
+    { "name": "UnifiedIndividualId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "BusinessUnitMID", "type": "Text", "length": 20, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "MatchConfidenceScore", "type": "Decimal", "scale": 2 },
+    { "name": "LastResolvedDate", "type": "Date" }
+  ]
+}

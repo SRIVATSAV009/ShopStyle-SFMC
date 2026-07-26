@@ -1,0 +1,24 @@
+{
+  "name": "ShopStyle_Preferences",
+  "customerKey": "DE_SHOPSTYLE_PREFERENCES",
+  "description": "1:1 subscriber communication & content preferences, written by the CloudPages Preference Center.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "None", "notes": "Retained for lifetime of parent Subscriber record; cascades on delete via automation-studio/sql/09-cascade-delete-orphans.sql" },
+  "fields": [
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "CategoryWomens", "type": "Boolean", "defaultValue": "true" },
+    { "name": "CategoryMens", "type": "Boolean", "defaultValue": "true" },
+    { "name": "CategoryKids", "type": "Boolean", "defaultValue": "false" },
+    { "name": "CategoryHome", "type": "Boolean", "defaultValue": "false" },
+    { "name": "CategoryBeauty", "type": "Boolean", "defaultValue": "false" },
+    { "name": "FrequencyPreference", "type": "Text", "length": 20, "defaultValue": "Standard", "notes": "Standard | Reduced | EssentialOnly" },
+    { "name": "PromotionalOptIn", "type": "Boolean", "defaultValue": "true" },
+    { "name": "TransactionalOnly", "type": "Boolean", "defaultValue": "false" },
+    { "name": "SMSOptIn", "type": "Boolean", "defaultValue": "false" },
+    { "name": "PushOptIn", "type": "Boolean", "defaultValue": "false" },
+    { "name": "PreferredSendTimeStart", "type": "Text", "length": 5, "notes": "HH:mm local time, used by Einstein STO fallback window" },
+    { "name": "PreferredSendTimeEnd", "type": "Text", "length": 5 },
+    { "name": "LastUpdated", "type": "Date" },
+    { "name": "UpdateSource", "type": "Text", "length": 30, "notes": "PreferenceCenter | SubscriptionMgmt | SmartCapture | API" }
+  ]
+}

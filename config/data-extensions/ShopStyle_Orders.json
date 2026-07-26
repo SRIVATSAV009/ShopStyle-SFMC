@@ -1,0 +1,22 @@
+{
+  "name": "ShopStyle_Orders",
+  "customerKey": "DE_SHOPSTYLE_ORDERS",
+  "description": "1:many order header records driving Post-Purchase journey entry and cross-sell logic.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "PeriodAfterCreate", "periodDays": 1095, "action": "ArchiveThenDelete", "notes": "36-month retention for order history; archived to sample-data/archive before delete per architecture/retention-policies.md" },
+  "fields": [
+    { "name": "OrderId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "OrderDate", "type": "Date", "isRequired": true },
+    { "name": "OrderStatus", "type": "Text", "length": 30, "notes": "Placed | Confirmed | Shipped | OutForDelivery | Delivered | Cancelled | Returned" },
+    { "name": "OrderTotal", "type": "Decimal", "scale": 2 },
+    { "name": "Currency", "type": "Text", "length": 3, "defaultValue": "USD" },
+    { "name": "ShippingCarrier", "type": "Text", "length": 50 },
+    { "name": "TrackingNumber", "type": "Text", "length": 60 },
+    { "name": "EstimatedDeliveryDate", "type": "Date" },
+    { "name": "ActualDeliveryDate", "type": "Date" },
+    { "name": "ReviewRequestSent", "type": "Boolean", "defaultValue": "false" },
+    { "name": "CrossSellSent", "type": "Boolean", "defaultValue": "false" },
+    { "name": "LastModifiedDate", "type": "Date" }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "ShopStyle_CartActivity",
+  "customerKey": "DE_SHOPSTYLE_CARTACTIVITY",
+  "description": "1:many active/abandoned cart snapshots, written by the web app REST trigger; drives the Abandoned Cart journey.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "PeriodAfterCreate", "periodDays": 14, "action": "DeleteRecord", "notes": "Short-lived operational data; carts convert to Orders or expire in 14 days" },
+  "fields": [
+    { "name": "CartId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "CartCreatedDate", "type": "Date", "isRequired": true },
+    { "name": "CartLastUpdatedDate", "type": "Date" },
+    { "name": "CartStatus", "type": "Text", "length": 20, "defaultValue": "Active", "notes": "Active | Abandoned | Converted | Expired" },
+    { "name": "CartTotal", "type": "Decimal", "scale": 2 },
+    { "name": "ItemCount", "type": "Number" },
+    { "name": "SKUsJSON", "type": "Text", "length": 4000, "notes": "JSON array of {sku, qty, price} snapshot at abandonment time" },
+    { "name": "DiscountCode", "type": "Text", "length": 30 },
+    { "name": "RecoveryEmailsSent", "type": "Number", "defaultValue": "0" },
+    { "name": "RecoverySMSSent", "type": "Number", "defaultValue": "0" },
+    { "name": "RecoveredDate", "type": "Date" }
+  ]
+}

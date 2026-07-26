@@ -1,0 +1,20 @@
+{
+  "name": "ShopStyle_Addresses",
+  "customerKey": "DE_SHOPSTYLE_ADDRESSES",
+  "description": "1:many subscriber shipping/billing addresses, synced from commerce platform & Sales Cloud.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "None", "notes": "Cascades with parent Subscriber" },
+  "fields": [
+    { "name": "AddressId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true, "notes": "FK -> ShopStyle_Subscribers.SubscriberKey" },
+    { "name": "AddressType", "type": "Text", "length": 20, "notes": "Shipping | Billing" },
+    { "name": "IsDefault", "type": "Boolean", "defaultValue": "false" },
+    { "name": "Line1", "type": "Text", "length": 150 },
+    { "name": "Line2", "type": "Text", "length": 150 },
+    { "name": "City", "type": "Text", "length": 100 },
+    { "name": "StateProvince", "type": "Text", "length": 50 },
+    { "name": "PostalCode", "type": "Text", "length": 20 },
+    { "name": "CountryCode", "type": "Text", "length": 2 },
+    { "name": "LastModifiedDate", "type": "Date" }
+  ]
+}

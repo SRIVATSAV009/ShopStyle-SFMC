@@ -1,0 +1,16 @@
+{
+  "name": "ShopStyle_ConsentLog",
+  "customerKey": "DE_SHOPSTYLE_CONSENTLOG",
+  "description": "Append-only audit trail of every consent change (opt-in/opt-out/preference update) for GDPR/CCPA compliance evidence.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "PeriodAfterCreate", "periodDays": 2555, "action": "None", "notes": "7-year retention for legal/compliance audit, never auto-deleted" },
+  "fields": [
+    { "name": "ConsentLogId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "ChannelType", "type": "Text", "length": 20, "notes": "Email | SMS | Push" },
+    { "name": "ConsentAction", "type": "Text", "length": 20, "notes": "OptIn | OptOut" },
+    { "name": "ConsentSource", "type": "Text", "length": 40, "notes": "PreferenceCenter | SmartCapture | POS | CallCenter | API" },
+    { "name": "IPAddress", "type": "Text", "length": 45 },
+    { "name": "Timestamp", "type": "Date", "isRequired": true }
+  ]
+}

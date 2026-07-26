@@ -1,0 +1,34 @@
+{
+  "name": "ShopStyle_Subscribers",
+  "customerKey": "DE_SHOPSTYLE_SUBSCRIBERS",
+  "description": "Primary sendable contact record. Root of the Data Designer contact model — every other contact-scoped DE relates back to this via SubscriberKey.",
+  "isSendable": true,
+  "sendableSubscriberField": "SubscriberKey",
+  "sendableDataExtensionField": "EmailAddress",
+  "retentionPolicy": {
+    "type": "PeriodAfterDateAttribute",
+    "referenceAttribute": "LastEngagementDate",
+    "periodDays": 730,
+    "action": "DeleteRecord",
+    "notes": "Aligns with 24-month engagement-based retention, see architecture/retention-policies.md"
+  },
+  "fields": [
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true, "notes": "Matches Contact Builder ContactKey / Sales Cloud Contact.Id" },
+    { "name": "EmailAddress", "type": "EmailAddress", "isRequired": true },
+    { "name": "MobileNumber", "type": "Phone", "isRequired": false },
+    { "name": "FirstName", "type": "Text", "length": 100 },
+    { "name": "LastName", "type": "Text", "length": 100 },
+    { "name": "DateOfBirth", "type": "Date" },
+    { "name": "Gender", "type": "Text", "length": 20 },
+    { "name": "PreferredLanguage", "type": "Text", "length": 10, "defaultValue": "en-US" },
+    { "name": "BusinessUnitMID", "type": "Text", "length": 20, "isRequired": true },
+    { "name": "EmailOptIn", "type": "Boolean", "defaultValue": "true" },
+    { "name": "SMSOptIn", "type": "Boolean", "defaultValue": "false" },
+    { "name": "SubscriberStatus", "type": "Text", "length": 20, "defaultValue": "Active", "notes": "Active | Held | Bounced | Unsubscribed" },
+    { "name": "SourceSystem", "type": "Text", "length": 50, "notes": "Web | POS | SalesCloud | DataCloud | Import" },
+    { "name": "CreatedDate", "type": "Date", "isRequired": true },
+    { "name": "LastModifiedDate", "type": "Date" },
+    { "name": "LastEngagementDate", "type": "Date", "notes": "Last open/click/SMS-reply, refreshed by automation-studio/sql/02-refresh-engagement-dates.sql" },
+    { "name": "UnifiedIndividualId", "type": "Text", "length": 60, "notes": "Salesforce Data Cloud Unified Individual ID — see data-cloud/identity-resolution/" }
+  ]
+}

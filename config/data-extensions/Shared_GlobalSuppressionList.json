@@ -1,0 +1,15 @@
+{
+  "name": "Shared_GlobalSuppressionList",
+  "customerKey": "DE_SHARED_GLOBALSUPPRESSION",
+  "description": "Parent-BU cross-brand suppression (unsubscribe, hard bounce, spam complaint, legal opt-out). Checked pre-send by every journey/automation via automation-studio/sql/01-apply-global-suppression.sql.",
+  "isSendable": false,
+  "sharedTo": ["5000011", "5000012", "5000013"],
+  "retentionPolicy": { "type": "None", "notes": "Suppressions are retained indefinitely for compliance" },
+  "fields": [
+    { "name": "EmailAddress", "type": "EmailAddress", "isPrimaryKey": true, "isRequired": true },
+    { "name": "SuppressionReason", "type": "Text", "length": 30, "notes": "Unsubscribe | HardBounce | SpamComplaint | LegalOptOut | ManualSuppress" },
+    { "name": "SuppressedDate", "type": "Date", "isRequired": true },
+    { "name": "SourceBU", "type": "Text", "length": 20 },
+    { "name": "SourceJourneyOrCampaign", "type": "Text", "length": 100 }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ShopStyle_OrderLineItems",
+  "customerKey": "DE_SHOPSTYLE_ORDERLINEITEMS",
+  "description": "Many:1 line items per order; joined against Shared_ProductCatalog for cross-sell recommendations.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "None", "notes": "Cascades with parent Order" },
+  "fields": [
+    { "name": "LineItemId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "OrderId", "type": "Text", "length": 60, "isRequired": true, "notes": "FK -> ShopStyle_Orders.OrderId" },
+    { "name": "SKU", "type": "Text", "length": 40, "isRequired": true, "notes": "FK -> Shared_ProductCatalog.SKU" },
+    { "name": "ProductName", "type": "Text", "length": 200 },
+    { "name": "Category", "type": "Text", "length": 60 },
+    { "name": "Quantity", "type": "Number" },
+    { "name": "UnitPrice", "type": "Decimal", "scale": 2 },
+    { "name": "LineTotal", "type": "Decimal", "scale": 2 }
+  ]
+}
