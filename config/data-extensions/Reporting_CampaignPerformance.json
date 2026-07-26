@@ -1,0 +1,21 @@
+{
+  "name": "Reporting_CampaignPerformance",
+  "customerKey": "DE_REPORTING_CAMPAIGNPERFORMANCE",
+  "description": "Nightly refresh target for sql/reporting/campaign-performance-summary.sql.",
+  "isSendable": false,
+  "fields": [
+    { "name": "JobID", "type": "Number", "isPrimaryKey": true, "isRequired": true },
+    { "name": "EmailName", "type": "Text", "length": 100 },
+    { "name": "JourneyLabel", "type": "Text", "length": 50 },
+    { "name": "SentCount", "type": "Number" },
+    { "name": "OpenCount", "type": "Number" },
+    { "name": "ClickCount", "type": "Number" },
+    { "name": "BounceCount", "type": "Number" },
+    { "name": "UnsubscribeCount", "type": "Number" },
+    { "name": "ComplaintCount", "type": "Number" },
+    { "name": "OpenRatePct", "type": "Decimal", "scale": 4 },
+    { "name": "ClickRatePct", "type": "Decimal", "scale": 4 },
+    { "name": "BounceRatePct", "type": "Decimal", "scale": 4 },
+    { "name": "ComplaintRatePct", "type": "Decimal", "scale": 4 }
+  ]
+}

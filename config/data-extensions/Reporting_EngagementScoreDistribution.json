@@ -1,0 +1,11 @@
+{
+  "name": "Reporting_EngagementScoreDistribution",
+  "customerKey": "DE_REPORTING_ENGAGEMENTSCOREDISTRIBUTION",
+  "description": "Nightly refresh target for sql/reporting/engagement-score-distribution.sql.",
+  "isSendable": false,
+  "fields": [
+    { "name": "ScoreBand", "type": "Text", "length": 30, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberCount", "type": "Number" },
+    { "name": "AvgScoreInBand", "type": "Decimal", "scale": 2 }
+  ]
+}

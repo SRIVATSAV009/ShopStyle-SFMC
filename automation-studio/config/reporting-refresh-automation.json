@@ -1,0 +1,17 @@
+{
+  "automationName": "Reporting-Nightly-Refresh",
+  "customerKey": "AUTO_REPORTING_NIGHTLY_REFRESH",
+  "description": "Refreshes all Tracking-Data-View-derived reporting tables consumed by dashboards and deliverability alerting.",
+  "schedule": { "type": "Daily", "startTime": "05:00", "timezone": "America/New_York" },
+  "steps": [
+    { "step": 1, "activities": [ { "type": "SQLQuery", "name": "Campaign-Performance-Summary", "file": "../../sql/reporting/campaign-performance-summary.sql", "targetDataExtension": "Reporting_CampaignPerformance" } ] },
+    { "step": 2, "activities": [ { "type": "SQLQuery", "name": "Deliverability-Summary", "file": "../../sql/reporting/deliverability-summary.sql", "targetDataExtension": "Reporting_DeliverabilitySummary" } ] },
+    { "step": 3, "activities": [ { "type": "SQLQuery", "name": "Engagement-Score-Distribution", "file": "../../sql/reporting/engagement-score-distribution.sql", "targetDataExtension": "Reporting_EngagementScoreDistribution" } ] },
+    { "step": 4, "activities": [ { "type": "Script", "name": "Evaluate-Deliverability-Guardrails", "file": "../../deliverability/monitors/alert-automation.js", "notes": "Node reference implementation; production equivalent is an SSJS Script Activity reading Reporting_DeliverabilitySummary and paging on GuardrailStatus='BREACH'." } ]}
+  ],
+  "errorHandling": {
+    "onActivityFailure": "HaltAutomationAndNotify",
+    "retryPolicy": { "maxRetries": 2, "retryDelayMinutes": 10 },
+    "notifications": { "onFailure": ["data-eng@shopstyleretail.com"] }
+  }
+}

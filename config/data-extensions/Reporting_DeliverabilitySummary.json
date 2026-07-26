@@ -1,0 +1,18 @@
+{
+  "name": "Reporting_DeliverabilitySummary",
+  "customerKey": "DE_REPORTING_DELIVERABILITYSUMMARY",
+  "description": "Nightly refresh target for sql/reporting/deliverability-summary.sql; GuardrailStatus consumed by deliverability/monitors/alert-automation.js.",
+  "isSendable": false,
+  "fields": [
+    { "name": "SendDate", "type": "Date", "isPrimaryKey": true, "isRequired": true },
+    { "name": "BusinessUnitMID", "type": "Text", "length": 20, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SentCount", "type": "Number" },
+    { "name": "BounceCount", "type": "Number" },
+    { "name": "HardBounceCount", "type": "Number" },
+    { "name": "SoftBounceCount", "type": "Number" },
+    { "name": "ComplaintCount", "type": "Number" },
+    { "name": "BounceRatePct", "type": "Decimal", "scale": 4 },
+    { "name": "ComplaintRatePct", "type": "Decimal", "scale": 4 },
+    { "name": "GuardrailStatus", "type": "Text", "length": 10, "notes": "OK | BREACH" }
+  ]
+}
