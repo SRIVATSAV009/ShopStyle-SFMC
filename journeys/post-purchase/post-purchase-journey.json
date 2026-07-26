@@ -1,0 +1,128 @@
+{
+  "key": "JOURNEY_POST_PURCHASE_SHOPSTYLE_US",
+  "name": "Post-Purchase Lifecycle - ShopStyle US",
+  "description": "Order confirmation is sent out-of-band via the Transactional Messaging API at checkout; this journey owns shipping/delivery notifications, review request, and cross-sell, using Wait Until Event activities tied to carrier webhook events.",
+  "version": 1,
+  "triggers": [
+    { "key": "TRIGGER-1", "type": "APIEvent", "name": "Order Placed Entry", "eventDefinitionKey": "APIEvent-OrderPlaced" }
+  ],
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "Reentry",
+  "reEntryNotes": "Each order is its own journey instance keyed by OrderId at the activity level (contact-level reentry allowed since a subscriber can have multiple concurrent orders).",
+  "exitCriteria": {
+    "type": "SQLQuery",
+    "query": "SELECT SubscriberKey FROM ShopStyle_Subscribers WHERE SubscriberStatus = 'Unsubscribed' OR EmailOptIn = 0"
+  },
+  "activities": [
+    {
+      "key": "WAIT-UNTIL-SHIPPED",
+      "type": "WaitUntilEvent",
+      "name": "Wait Until Order Shipped",
+      "configurationArguments": {
+        "eventDefinitionKey": "APIEvent-OrderShipped",
+        "matchOn": "OrderId = Entry.OrderId",
+        "timeoutDuration": 10,
+        "timeoutUnit": "Days",
+        "timeoutBranch": "EXIT-SHIP-TIMEOUT"
+      },
+      "outcomes": [
+        { "eventReceived": true, "next": "EMAIL-SHIPPING" },
+        { "eventReceived": false, "next": "EXIT-SHIP-TIMEOUT" }
+      ]
+    },
+    {
+      "key": "EMAIL-SHIPPING",
+      "type": "EmailSend",
+      "name": "Shipping Notification",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_PP_02_SHIPPING",
+        "emailAssetPath": "../../email-templates/post-purchase/shipping-notification.html",
+        "subjectLine": "Your ShopStyle order is on its way!"
+      },
+      "outcomes": [{ "next": "WAIT-UNTIL-DELIVERED" }]
+    },
+    {
+      "key": "WAIT-UNTIL-DELIVERED",
+      "type": "WaitUntilEvent",
+      "name": "Wait Until Order Delivered",
+      "configurationArguments": {
+        "eventDefinitionKey": "APIEvent-OrderDelivered",
+        "matchOn": "OrderId = Entry.OrderId",
+        "timeoutDuration": 14,
+        "timeoutUnit": "Days",
+        "timeoutBranch": "EXIT-DELIVERY-TIMEOUT"
+      },
+      "outcomes": [
+        { "eventReceived": true, "next": "EMAIL-DELIVERED" },
+        { "eventReceived": false, "next": "EXIT-DELIVERY-TIMEOUT" }
+      ]
+    },
+    {
+      "key": "EMAIL-DELIVERED",
+      "type": "EmailSend",
+      "name": "Delivery Confirmation",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_PP_03_DELIVERED",
+        "emailAssetPath": "../../email-templates/post-purchase/delivery-notification.html",
+        "subjectLine": "Delivered! Here's how to make the most of your order"
+      },
+      "outcomes": [{ "next": "WAIT-5-DAYS" }]
+    },
+    {
+      "key": "WAIT-5-DAYS",
+      "type": "Wait",
+      "name": "Wait 5 Days (post-delivery)",
+      "configurationArguments": { "waitDuration": 5, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-NOT-RETURNED" }]
+    },
+    {
+      "key": "DECISION-NOT-RETURNED",
+      "type": "MultiCriteriaDecision",
+      "name": "Order Not Returned?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "Eligible", "criteria": "NOT EXISTS(ShopStyle_Orders WHERE OrderId = Entry.OrderId AND OrderStatus = 'Returned')" },
+          { "name": "Returned", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "Eligible", "next": "EMAIL-REVIEW-REQUEST" },
+        { "branchName": "Returned", "next": "EXIT-RETURNED" }
+      ]
+    },
+    {
+      "key": "EMAIL-REVIEW-REQUEST",
+      "type": "EmailSend",
+      "name": "Review Request",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_PP_04_REVIEW",
+        "emailAssetPath": "../../email-templates/post-purchase/review-request.html",
+        "subjectLine": "How's everything working out?"
+      },
+      "outcomes": [{ "next": "WAIT-2-DAYS" }]
+    },
+    {
+      "key": "WAIT-2-DAYS",
+      "type": "Wait",
+      "name": "Wait 2 Days",
+      "configurationArguments": { "waitDuration": 2, "waitUnit": "Days" },
+      "outcomes": [{ "next": "EMAIL-CROSS-SELL" }]
+    },
+    {
+      "key": "EMAIL-CROSS-SELL",
+      "type": "EmailSend",
+      "name": "Cross-Sell Recommendations",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_PP_05_CROSSSELL",
+        "emailAssetPath": "../../email-templates/post-purchase/cross-sell.html",
+        "subjectLine": "Complete the look"
+      },
+      "outcomes": [{ "next": "EXIT-COMPLETE" }]
+    },
+    { "key": "EXIT-SHIP-TIMEOUT", "type": "JourneyExit", "name": "Exit - No Ship Event Within 10 Days (escalate to ops)", "outcomes": [] },
+    { "key": "EXIT-DELIVERY-TIMEOUT", "type": "JourneyExit", "name": "Exit - No Delivery Event Within 14 Days (escalate to ops)", "outcomes": [] },
+    { "key": "EXIT-RETURNED", "type": "JourneyExit", "name": "Exit - Order Returned, Skip Review/Cross-sell", "outcomes": [] },
+    { "key": "EXIT-COMPLETE", "type": "JourneyExit", "name": "Exit - Lifecycle Complete", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "WAIT-UNTIL-SHIPPED" }
+}

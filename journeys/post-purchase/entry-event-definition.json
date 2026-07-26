@@ -1,0 +1,21 @@
+{
+  "primaryEntryEvent": {
+    "eventDefinitionKey": "APIEvent-OrderPlaced",
+    "name": "Post-Purchase Journey - Order Placed Entry",
+    "type": "APIEvent",
+    "eventDefinitionId": "c4a2d3b1-5f8b-4d0c-8b2f-postpurch001",
+    "dataExtensionName": "PostPurchase_Journey_Entry",
+    "schema": {
+      "fields": [
+        { "name": "SubscriberKey", "type": "Text", "required": true, "isEntryPointField": true },
+        { "name": "OrderId", "type": "Text", "required": true },
+        { "name": "OrderDate", "type": "Date", "required": true }
+      ]
+    }
+  },
+  "waitUntilEvents": [
+    { "eventDefinitionKey": "APIEvent-OrderShipped", "usedBy": "WAIT-UNTIL-SHIPPED activity" },
+    { "eventDefinitionKey": "APIEvent-OrderDelivered", "usedBy": "WAIT-UNTIL-DELIVERED activity" }
+  ],
+  "notes": "See api/rest/transactional-send.md and api/rest/order-status-events.md for the full API contracts and fallback timeout handling."
+}
