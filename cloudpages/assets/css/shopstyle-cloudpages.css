@@ -1,0 +1,120 @@
+/* Shared CloudPages stylesheet — referenced by all ShopStyle CloudPages via a relative <link>.
+   Hosted as a CloudPages asset (Web Studio -> Content Builder -> CloudPages Assets). */
+
+:root {
+  --sp-black: #111111;
+  --sp-gray-dark: #444444;
+  --sp-gray: #767676;
+  --sp-gray-light: #e5e5e5;
+  --sp-gold: #c9a24b;
+  --sp-red: #c00000;
+  --sp-white: #ffffff;
+  --sp-bg: #f5f5f5;
+  --sp-radius: 2px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--sp-bg);
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--sp-black);
+}
+
+.sp-header {
+  background: var(--sp-black);
+  padding: 20px;
+  text-align: center;
+}
+.sp-header img { height: 32px; }
+
+.sp-container {
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--sp-white);
+  padding: 32px 28px 40px;
+}
+
+.sp-container h1 { font-size: 24px; margin: 0 0 8px; }
+.sp-container p.sp-subtitle { font-size: 14px; color: var(--sp-gray-dark); margin: 0 0 28px; }
+
+.sp-field-group { margin-bottom: 20px; }
+.sp-field-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: var(--sp-black);
+}
+.sp-field-group input[type="text"],
+.sp-field-group input[type="email"],
+.sp-field-group input[type="tel"],
+.sp-field-group input[type="date"],
+.sp-field-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: var(--sp-radius);
+}
+.sp-field-group input.sp-invalid { border-color: var(--sp-red); }
+.sp-error-message {
+  color: var(--sp-red);
+  font-size: 12px;
+  margin-top: 4px;
+  display: none;
+}
+.sp-error-message.sp-visible { display: block; }
+
+.sp-checkbox-row { display: flex; align-items: center; margin-bottom: 12px; }
+.sp-checkbox-row input[type="checkbox"] { margin-right: 10px; width: 18px; height: 18px; }
+.sp-checkbox-row label { font-size: 14px; margin: 0; font-weight: normal; }
+
+.sp-btn-primary {
+  display: inline-block;
+  background: var(--sp-black);
+  color: var(--sp-white);
+  border: none;
+  padding: 14px 32px;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: var(--sp-radius);
+}
+.sp-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.sp-btn-secondary {
+  display: inline-block;
+  background: transparent;
+  color: var(--sp-black);
+  border: 1px solid var(--sp-black);
+  padding: 13px 28px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: var(--sp-radius);
+}
+.sp-btn-danger { border-color: var(--sp-red); color: var(--sp-red); }
+
+.sp-alert {
+  padding: 14px 16px;
+  border-radius: var(--sp-radius);
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+.sp-alert-success { background: #e8f5e9; color: #1e6b2e; border: 1px solid #b6e0bc; }
+.sp-alert-error { background: #fdecec; color: #a11212; border: 1px solid #f5c2c2; }
+.sp-alert-info { background: #eef4fb; color: #1a4e8a; border: 1px solid #c7dcf2; }
+
+.sp-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--sp-gray);
+  padding: 24px 20px;
+}
+
+@media (max-width: 480px) {
+  .sp-container { padding: 24px 18px 32px; }
+}
