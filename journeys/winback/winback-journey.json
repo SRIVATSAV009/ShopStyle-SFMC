@@ -1,0 +1,128 @@
+{
+  "key": "JOURNEY_WINBACK_SHOPSTYLE_US",
+  "name": "Winback / Re-engagement - ShopStyle US",
+  "description": "Graduated 3-touch re-engagement series (90-day / 180-day / sunset-warning) with a re-engagement check before each escalation, ending in automated sunset for subscribers who remain inactive through the full series.",
+  "version": 1,
+  "entrySource": { "$ref": "entry-source.json" },
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "NoReentryUntilExit",
+  "exitCriteria": {
+    "type": "SQLQuery",
+    "query": "SELECT SubscriberKey FROM ShopStyle_Subscribers WHERE SubscriberStatus IN ('Unsubscribed', 'Sunset') OR EmailOptIn = 0"
+  },
+  "activities": [
+    {
+      "key": "EMAIL-1-WEMISSYOU",
+      "type": "EmailSend",
+      "name": "Winback Email 1 - We Miss You (90-Day)",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WINBACK_01",
+        "emailAssetPath": "../../email-templates/winback/winback-email-1.html",
+        "subjectLine": "We miss you at ShopStyle"
+      },
+      "outcomes": [{ "next": "WAIT-14-DAYS-1" }]
+    },
+    {
+      "key": "WAIT-14-DAYS-1",
+      "type": "Wait",
+      "name": "Wait 14 Days",
+      "configurationArguments": { "waitDuration": 14, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-REENGAGED-1" }]
+    },
+    {
+      "key": "DECISION-REENGAGED-1",
+      "type": "MultiCriteriaDecision",
+      "name": "Re-engaged Since Email 1?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "ReEngaged", "criteria": "EXISTS(_Open WHERE SubscriberKey = Contact.SubscriberKey AND EventDate >= Activity.EMAIL-1-WEMISSYOU.SendDate) OR EXISTS(_Click WHERE SubscriberKey = Contact.SubscriberKey AND EventDate >= Activity.EMAIL-1-WEMISSYOU.SendDate)" },
+          { "name": "StillInactive", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "ReEngaged", "next": "EXIT-REENGAGED" },
+        { "branchName": "StillInactive", "next": "EMAIL-2-INCENTIVE" }
+      ]
+    },
+    {
+      "key": "EMAIL-2-INCENTIVE",
+      "type": "EmailSend",
+      "name": "Winback Email 2 - 25% Off Incentive (180-Day)",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WINBACK_02_INCENTIVE",
+        "emailAssetPath": "../../email-templates/winback/winback-email-2-incentive.html",
+        "subjectLine": "It's been a while — 25% off to come back"
+      },
+      "outcomes": [{ "next": "WAIT-14-DAYS-2" }]
+    },
+    {
+      "key": "WAIT-14-DAYS-2",
+      "type": "Wait",
+      "name": "Wait 14 Days",
+      "configurationArguments": { "waitDuration": 14, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-REENGAGED-2" }]
+    },
+    {
+      "key": "DECISION-REENGAGED-2",
+      "type": "MultiCriteriaDecision",
+      "name": "Re-engaged Since Email 2?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "ReEngaged", "criteria": "EXISTS(_Open WHERE SubscriberKey = Contact.SubscriberKey AND EventDate >= Activity.EMAIL-2-INCENTIVE.SendDate) OR EXISTS(_Click WHERE SubscriberKey = Contact.SubscriberKey AND EventDate >= Activity.EMAIL-2-INCENTIVE.SendDate)" },
+          { "name": "StillInactive", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "ReEngaged", "next": "EXIT-REENGAGED" },
+        { "branchName": "StillInactive", "next": "EMAIL-3-SUNSET-WARNING" }
+      ]
+    },
+    {
+      "key": "EMAIL-3-SUNSET-WARNING",
+      "type": "EmailSend",
+      "name": "Winback Email 3 - Sunset Warning",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WINBACK_03_SUNSET",
+        "emailAssetPath": "../../email-templates/winback/winback-email-3-sunset-warning.html",
+        "subjectLine": "Should we stop emailing you?"
+      },
+      "outcomes": [{ "next": "WAIT-30-DAYS" }]
+    },
+    {
+      "key": "WAIT-30-DAYS",
+      "type": "Wait",
+      "name": "Wait 30 Days (final grace period)",
+      "configurationArguments": { "waitDuration": 30, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-REENGAGED-3" }]
+    },
+    {
+      "key": "DECISION-REENGAGED-3",
+      "type": "MultiCriteriaDecision",
+      "name": "Re-engaged Since Sunset Warning?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "ReEngaged", "criteria": "EXISTS(_Open WHERE SubscriberKey = Contact.SubscriberKey AND EventDate >= Activity.EMAIL-3-SUNSET-WARNING.SendDate) OR EXISTS(_Click WHERE SubscriberKey = Contact.SubscriberKey AND EventDate >= Activity.EMAIL-3-SUNSET-WARNING.SendDate)" },
+          { "name": "StillInactive", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "ReEngaged", "next": "EXIT-REENGAGED" },
+        { "branchName": "StillInactive", "next": "WINBACK-LOG-SUNSET" }
+      ]
+    },
+    {
+      "key": "WINBACK-LOG-SUNSET",
+      "type": "SQLQuery",
+      "name": "Flag Series Complete for Sunset Enforcement",
+      "configurationArguments": {
+        "targetDataExtension": "Winback_Journey_Log",
+        "updateStatement": "UPDATE Winback_Journey_Log SET InactivityTier = 'Sunset' WHERE SubscriberKey = Contact.SubscriberKey",
+        "notes": "Marks the subscriber eligible for automation-studio/sql/17-sunset-inactive-subscribers.sql, which runs weekly after this journey's Monday cohort reaches this point."
+      },
+      "outcomes": [{ "next": "EXIT-SUNSET-PENDING" }]
+    },
+    { "key": "EXIT-REENGAGED", "type": "JourneyExit", "name": "Exit - Re-engaged", "outcomes": [] },
+    { "key": "EXIT-SUNSET-PENDING", "type": "JourneyExit", "name": "Exit - Flagged for Sunset Enforcement", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "EMAIL-1-WEMISSYOU" }
+}

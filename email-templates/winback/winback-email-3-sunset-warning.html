@@ -1,0 +1,37 @@
+<%%[
+  VAR @firstName
+  SET @firstName = AttributeValue("FirstName")
+  IF Empty(@firstName) THEN SET @firstName = "there" ENDIF
+]%%>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Should we stop emailing you?</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;">
+          <tr><td style="padding:28px 20px;text-align:center;background:#111111;"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle" width="180"></td></tr>
+          <tr>
+            <td style="padding:36px 30px 12px;text-align:center;">
+              <h1 style="margin:0 0 12px;font-size:24px;color:#111;">%%=v(@firstName)=%%, should we stop emailing you?</h1>
+              <p style="margin:0;font-size:14px;color:#444;line-height:22px;">
+                We haven't heard from you in a while, so we don't want to keep filling your inbox if
+                ShopStyle emails aren't useful to you anymore. Let us know what you'd like.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 30px 36px;text-align:center;">
+              <a href="%%=RedirectTo('https://offers.shopstyleretail.com/preference-center?intent=stay')=%%" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:bold;margin:0 6px 10px;">KEEP ME SUBSCRIBED</a>
+              <a href="%%=RedirectTo('https://offers.shopstyleretail.com/preference-center?intent=reduce')=%%" style="display:inline-block;border:1px solid #111;color:#111;text-decoration:none;padding:14px 28px;font-size:13px;font-weight:bold;margin:0 6px 10px;">SEND ME FEWER EMAILS</a>
+              <p style="margin:14px 0 0;font-size:12px;color:#999;">If we don't hear from you, we'll stop emailing after 30 days.</p>
+            </td>
+          </tr>
+          <tr><td>%%=ContentBlockByKey("Shared_BrandContentLibrary.LegalFooter_US")=%%</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "entrySourceType": "SalesforceDataExtension",
+  "dataExtensionKey": "DE_WINBACK_JOURNEY_ENTRY",
+  "filter": "InactivityTier = 'Tier1_90Day'",
+  "schedule": { "type": "Recurring", "interval": 1, "unit": "Weeks", "dayOfWeek": "Monday", "startTime": "08:00", "timezone": "America/New_York" },
+  "entryContactKeyField": "SubscriberKey",
+  "notes": "Only Tier1_90Day rows trigger fresh journey entry; Tier2_180Day/Sunset are handled inside the journey's own decision splits as escalation, not separate entries, to avoid re-entering a subscriber already mid-series."
+}
