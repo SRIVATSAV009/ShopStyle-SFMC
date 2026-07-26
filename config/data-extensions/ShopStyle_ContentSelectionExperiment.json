@@ -1,0 +1,13 @@
+{
+  "name": "ShopStyle_ContentSelectionExperiment",
+  "customerKey": "DE_SHOPSTYLE_CONTENTSELECTIONEXPERIMENT",
+  "description": "Logs which content variant (Einstein Content Selection vs rule-based control) each subscriber received, for the shadow-mode rollout comparison in sql/reporting/content-selection-performance.sql.",
+  "isSendable": false,
+  "fields": [
+    { "name": "ExperimentId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "EmailName", "type": "Text", "length": 100 },
+    { "name": "ContentVariant", "type": "Text", "length": 30, "notes": "EinsteinContentSelection | RuleBasedControl" },
+    { "name": "SendDate", "type": "Date" }
+  ]
+}
