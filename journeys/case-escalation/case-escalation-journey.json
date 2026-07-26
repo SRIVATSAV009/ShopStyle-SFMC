@@ -1,0 +1,67 @@
+{
+  "key": "JOURNEY_CASE_ESCALATION_CARE",
+  "name": "Case Escalation Care",
+  "description": "Service (not marketing) journey triggered by a Salesforce Data Event when a Case is escalated. Uses Default Transactional Send Classification so it bypasses promotional suppression.",
+  "version": 1,
+  "triggers": [
+    { "key": "TRIGGER-1", "type": "SalesforceDataEvent", "name": "Case Escalated", "eventDefinitionKey": "SFDCEvent-CaseEscalated" },
+    { "key": "TRIGGER-2", "type": "APIEvent", "name": "Case Escalated (fallback for non-Salesforce callers)", "eventDefinitionKey": "APIEvent-CaseEscalated" }
+  ],
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "Reentry",
+  "activities": [
+    {
+      "key": "EMAIL-ACK",
+      "type": "EmailSend",
+      "name": "Escalation Acknowledgment",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_CASE_ACK",
+        "sendClassification": "Default Transactional Send Classification",
+        "subjectLine": "We've received your escalation - our team is on it"
+      },
+      "outcomes": [{ "next": "WAIT-48H" }]
+    },
+    {
+      "key": "WAIT-48H",
+      "type": "Wait",
+      "name": "Wait 48 Hours",
+      "configurationArguments": { "waitDuration": 48, "waitUnit": "Hours" },
+      "outcomes": [{ "next": "DECISION-RESOLVED" }]
+    },
+    {
+      "key": "DECISION-RESOLVED",
+      "type": "MultiCriteriaDecision",
+      "name": "Case Resolved?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "Resolved", "criteria": "EXISTS(_SFCase WHERE Id = Entry.CaseId AND Status = 'Closed')" },
+          { "name": "StillOpen", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "Resolved", "next": "EMAIL-SURVEY" },
+        { "branchName": "StillOpen", "next": "ALERT-SUPPORT-MANAGER" }
+      ]
+    },
+    {
+      "key": "EMAIL-SURVEY",
+      "type": "EmailSend",
+      "name": "Satisfaction Survey",
+      "configurationArguments": { "emailTemplateKey": "EMAIL_CASE_SURVEY", "sendClassification": "Default Transactional Send Classification", "subjectLine": "How did we do?" },
+      "outcomes": [{ "next": "EXIT-COMPLETE" }]
+    },
+    {
+      "key": "ALERT-SUPPORT-MANAGER",
+      "type": "RESTCallout",
+      "name": "Internal Alert - Case Still Open at 48h",
+      "configurationArguments": {
+        "endpoint": "internal Slack webhook via api/mock-server/routes/internalAlert.js",
+        "payload": { "caseId": "Entry.CaseId", "message": "Case escalated 48h ago, still open" }
+      },
+      "outcomes": [{ "next": "EXIT-ESCALATED-INTERNAL" }]
+    },
+    { "key": "EXIT-COMPLETE", "type": "JourneyExit", "name": "Exit - Resolved", "outcomes": [] },
+    { "key": "EXIT-ESCALATED-INTERNAL", "type": "JourneyExit", "name": "Exit - Internal Escalation Sent", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "EMAIL-ACK" }
+}
