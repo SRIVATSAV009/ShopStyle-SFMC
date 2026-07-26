@@ -1,0 +1,57 @@
+<%%[
+  VAR @firstName, @tier, @loyRow, @offerText, @promoCode
+  SET @firstName = AttributeValue("FirstName")
+  SET @tier = AttributeValue("CurrentTier")
+  IF Empty(@firstName) THEN SET @firstName = "there" ENDIF
+  IF Empty(@tier) THEN SET @tier = "Bronze" ENDIF
+
+  IF @tier == "Platinum" THEN
+    SET @offerText = "30% off + a surprise gift with your order"
+    SET @promoCode = "BDAYPLAT30"
+  ELSEIF @tier == "Gold" THEN
+    SET @offerText = "25% off + free gift wrapping"
+    SET @promoCode = "BDAYGOLD25"
+  ELSEIF @tier == "Silver" THEN
+    SET @offerText = "20% off + free shipping"
+    SET @promoCode = "BDAYSILV20"
+  ELSE
+    SET @offerText = "15% off your next order"
+    SET @promoCode = "BDAYBRZ15"
+  ENDIF
+]%%>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>A birthday gift for you</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;">
+          <tr><td style="padding:28px 20px;text-align:center;background:#111111;"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle" width="180"></td></tr>
+          <tr>
+            <td style="padding:36px 30px 12px;text-align:center;">
+              <p style="margin:0 0 6px;font-size:12px;letter-spacing:1px;color:#c9a24b;text-transform:uppercase;font-weight:bold;">%%=v(@tier)=%% Member Birthday Gift</p>
+              <h1 style="margin:0 0 12px;font-size:26px;color:#111;">Happy Birthday, %%=v(@firstName)=%%!</h1>
+              <p style="margin:0;font-size:15px;color:#444;line-height:22px;">As a %%=v(@tier)=%% member, you've earned <strong>%%=v(@offerText)=%%</strong>.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 30px;text-align:center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;border:2px dashed #c9a24b;">
+                <tr><td style="padding:16px 32px;text-align:center;"><p style="margin:0;font-size:22px;font-weight:bold;color:#111;">%%=v(@promoCode)=%%</p></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 30px 36px;text-align:center;">
+              <a href="%%=RedirectTo(Concat('https://shopstyleretail.com/shop?promo=', @promoCode, '&utm_source=email&utm_campaign=birthday&utm_content=variant_b'))=%%" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 36px;font-size:14px;font-weight:bold;">CLAIM YOUR %%=v(@tier)=%% GIFT</a>
+            </td>
+          </tr>
+          <tr><td style="padding:0 30px 30px;text-align:center;font-size:12px;color:#999;">Valid for 14 days. One use per customer.</td></tr>
+          <tr><td>%%=ContentBlockByKey("Shared_BrandContentLibrary.LegalFooter_US")=%%</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

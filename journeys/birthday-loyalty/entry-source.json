@@ -1,0 +1,8 @@
+{
+  "entrySourceType": "SalesforceDataExtension",
+  "dataExtensionKey": "DE_BIRTHDAY_JOURNEY_ENTRY",
+  "filter": null,
+  "schedule": { "type": "Recurring", "interval": 1, "unit": "Days", "startTime": "06:00", "timezone": "America/New_York" },
+  "entryContactKeyField": "SubscriberKey",
+  "notes": "Populated once daily at 05:00 by automation-studio/sql/15-detect-birthdays.sql; journey polls at 06:00 to guarantee the DE is fully refreshed first."
+}

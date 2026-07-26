@@ -1,0 +1,75 @@
+{
+  "key": "JOURNEY_BIRTHDAY_LOYALTY_SHOPSTYLE_US",
+  "name": "Birthday Reward - ShopStyle US",
+  "description": "Daily DE-entry birthday journey with a 50/50 Random Split A/B test comparing a flat-discount creative (Variant A) against a tier-scaled-gift creative (Variant B), converging into shared post-send tracking.",
+  "version": 1,
+  "entrySource": { "$ref": "entry-source.json" },
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "NoReentryUntilExit",
+  "exitCriteria": {
+    "type": "SQLQuery",
+    "query": "SELECT SubscriberKey FROM ShopStyle_Subscribers WHERE SubscriberStatus = 'Unsubscribed' OR EmailOptIn = 0"
+  },
+  "activities": [
+    {
+      "key": "RANDOM-SPLIT-AB",
+      "type": "RandomSplit",
+      "name": "Birthday Creative A/B Test",
+      "configurationArguments": {
+        "paths": [
+          { "name": "Variant A - Flat 20% Off", "percentage": 50, "next": "LOG-VARIANT-A" },
+          { "name": "Variant B - Tier-Scaled Gift", "percentage": 50, "next": "LOG-VARIANT-B" }
+        ],
+        "notes": "Test runs continuously (not a fixed-duration test-then-winner split) since birthday volume per day is naturally low; results reviewed monthly via sql/reporting/ab-test-results.sql."
+      },
+      "outcomes": [
+        { "path": "Variant A - Flat 20% Off", "next": "LOG-VARIANT-A" },
+        { "path": "Variant B - Tier-Scaled Gift", "next": "LOG-VARIANT-B" }
+      ]
+    },
+    {
+      "key": "LOG-VARIANT-A",
+      "type": "SQLQuery",
+      "name": "Log Variant A Assignment",
+      "configurationArguments": {
+        "targetDataExtension": "ShopStyle_ABTestResults",
+        "insertStatement": "INSERT INTO ShopStyle_ABTestResults (TestId, JourneyKey, SubscriberKey, TestName, Variant, EntryDate, EmailNameSent) VALUES (CONCAT('JOURNEY_BIRTHDAY_LOYALTY_SHOPSTYLE_US-', Entry.SubscriberKey, '-', CAST(GETDATE() AS VARCHAR)), 'JOURNEY_BIRTHDAY_LOYALTY_SHOPSTYLE_US', Entry.SubscriberKey, 'Birthday Creative Test', 'A', GETDATE(), 'EMAIL_BIRTHDAY_VARIANT_A')"
+      },
+      "outcomes": [{ "next": "EMAIL-BIRTHDAY-A" }]
+    },
+    {
+      "key": "EMAIL-BIRTHDAY-A",
+      "type": "EmailSend",
+      "name": "Birthday Email - Variant A (Flat 20% Off)",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_BIRTHDAY_VARIANT_A",
+        "emailAssetPath": "../../email-templates/birthday/birthday-email-variant-a.html",
+        "subjectLine": "Happy Birthday! Enjoy 20% off, on us"
+      },
+      "outcomes": [{ "next": "EXIT-COMPLETE" }]
+    },
+    {
+      "key": "LOG-VARIANT-B",
+      "type": "SQLQuery",
+      "name": "Log Variant B Assignment",
+      "configurationArguments": {
+        "targetDataExtension": "ShopStyle_ABTestResults",
+        "insertStatement": "INSERT INTO ShopStyle_ABTestResults (TestId, JourneyKey, SubscriberKey, TestName, Variant, EntryDate, EmailNameSent) VALUES (CONCAT('JOURNEY_BIRTHDAY_LOYALTY_SHOPSTYLE_US-', Entry.SubscriberKey, '-', CAST(GETDATE() AS VARCHAR)), 'JOURNEY_BIRTHDAY_LOYALTY_SHOPSTYLE_US', Entry.SubscriberKey, 'Birthday Creative Test', 'B', GETDATE(), 'EMAIL_BIRTHDAY_VARIANT_B')"
+      },
+      "outcomes": [{ "next": "EMAIL-BIRTHDAY-B" }]
+    },
+    {
+      "key": "EMAIL-BIRTHDAY-B",
+      "type": "EmailSend",
+      "name": "Birthday Email - Variant B (Tier-Scaled Gift)",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_BIRTHDAY_VARIANT_B",
+        "emailAssetPath": "../../email-templates/birthday/birthday-email-variant-b.html",
+        "subjectLine": "A birthday gift picked for your ShopStyle Rewards tier"
+      },
+      "outcomes": [{ "next": "EXIT-COMPLETE" }]
+    },
+    { "key": "EXIT-COMPLETE", "type": "JourneyExit", "name": "Exit - Birthday Send Complete", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "RANDOM-SPLIT-AB" }
+}

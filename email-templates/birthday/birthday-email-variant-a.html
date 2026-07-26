@@ -1,0 +1,40 @@
+<%%[
+  VAR @firstName
+  SET @firstName = AttributeValue("FirstName")
+  IF Empty(@firstName) THEN SET @firstName = "there" ENDIF
+]%%>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Happy Birthday!</title></head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;">
+    <tr>
+      <td align="center" style="padding:24px 12px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;">
+          <tr><td style="padding:28px 20px;text-align:center;background:linear-gradient(135deg,#c9a24b,#111111);"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle" width="180"></td></tr>
+          <tr>
+            <td style="padding:36px 30px 12px;text-align:center;">
+              <h1 style="margin:0 0 12px;font-size:26px;color:#111;">Happy Birthday, %%=v(@firstName)=%%!</h1>
+              <p style="margin:0;font-size:15px;color:#444;line-height:22px;">To celebrate, here's a flat <strong>20% off</strong> anything you want — our treat.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 30px;text-align:center;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;border:2px dashed #c9a24b;">
+                <tr><td style="padding:16px 32px;text-align:center;"><p style="margin:0;font-size:22px;font-weight:bold;color:#111;">BDAY20</p></td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 30px 36px;text-align:center;">
+              <a href="%%=RedirectTo('https://shopstyleretail.com/shop?promo=BDAY20&utm_source=email&utm_campaign=birthday&utm_content=variant_a')=%%" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:14px 36px;font-size:14px;font-weight:bold;">CLAIM YOUR GIFT</a>
+            </td>
+          </tr>
+          <tr><td style="padding:0 30px 30px;text-align:center;font-size:12px;color:#999;">Valid for 14 days. One use per customer.</td></tr>
+          <tr><td>%%=ContentBlockByKey("Shared_BrandContentLibrary.LegalFooter_US")=%%</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
