@@ -1,0 +1,15 @@
+{
+  "automationName": "Loyalty-Tier-and-Birthday-Nightly",
+  "customerKey": "AUTO_LOYALTY_BIRTHDAY_NIGHTLY",
+  "description": "Recalculates loyalty tiers, then detects today's birthdays for journey entry.",
+  "schedule": { "type": "Daily", "startTime": "04:00", "timezone": "America/New_York" },
+  "steps": [
+    { "step": 1, "activities": [ { "type": "SQLQuery", "name": "Recalculate-Loyalty-Tiers", "file": "../sql/14-recalculate-loyalty-tiers.sql", "targetDataExtension": "ShopStyle_Loyalty" } ] },
+    { "step": 2, "activities": [ { "type": "SQLQuery", "name": "Detect-Birthdays", "file": "../sql/15-detect-birthdays.sql", "targetDataExtension": "Birthday_Journey_Entry" } ] }
+  ],
+  "errorHandling": {
+    "onActivityFailure": "HaltAutomationAndNotify",
+    "retryPolicy": { "maxRetries": 2, "retryDelayMinutes": 10 },
+    "notifications": { "onFailure": ["data-eng@shopstyleretail.com"] }
+  }
+}

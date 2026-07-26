@@ -1,0 +1,12 @@
+{
+  "name": "Birthday_Journey_Log",
+  "customerKey": "DE_BIRTHDAY_JOURNEY_LOG",
+  "description": "Append-only log preventing duplicate birthday-journey entry within the same calendar year.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "PeriodAfterCreate", "periodDays": 730, "action": "DeleteRecord" },
+  "fields": [
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "BirthdayYear", "type": "Number", "isPrimaryKey": true, "isRequired": true },
+    { "name": "EnteredDate", "type": "Date", "isRequired": true }
+  ]
+}

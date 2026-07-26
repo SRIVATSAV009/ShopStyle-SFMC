@@ -1,0 +1,13 @@
+{
+  "name": "Birthday_Journey_Entry",
+  "customerKey": "DE_BIRTHDAY_JOURNEY_ENTRY",
+  "description": "Daily-refreshed journey entry source, populated by automation-studio/sql/15-detect-birthdays.sql.",
+  "isSendable": false,
+  "fields": [
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "EmailAddress", "type": "EmailAddress", "isRequired": true },
+    { "name": "FirstName", "type": "Text", "length": 100 },
+    { "name": "CurrentTier", "type": "Text", "length": 20 },
+    { "name": "BirthdayYear", "type": "Number" }
+  ]
+}

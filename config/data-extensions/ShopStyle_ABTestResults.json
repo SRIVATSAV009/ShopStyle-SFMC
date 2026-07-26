@@ -1,0 +1,15 @@
+{
+  "name": "ShopStyle_ABTestResults",
+  "customerKey": "DE_SHOPSTYLE_ABTESTRESULTS",
+  "description": "Per-subscriber variant assignment log for journey Random Split A/B tests, joined against Tracking Data Views for performance analysis (see sql/reporting/ab-test-results.sql).",
+  "isSendable": false,
+  "fields": [
+    { "name": "TestId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true, "notes": "Concat(JourneyKey, '-', SubscriberKey, '-', EntryDate)" },
+    { "name": "JourneyKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "TestName", "type": "Text", "length": 100 },
+    { "name": "Variant", "type": "Text", "length": 10, "notes": "A | B" },
+    { "name": "EntryDate", "type": "Date" },
+    { "name": "EmailNameSent", "type": "Text", "length": 100 }
+  ]
+}
