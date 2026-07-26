@@ -1,0 +1,13 @@
+{
+  "parentBusinessUnit": {
+    "mid": "5000001",
+    "name": "ShopStyle Retail Enterprise 2.0",
+    "timezone": "America/New_York"
+  },
+  "childBusinessUnits": [
+    { "mid": "5000011", "name": "ShopStyle US", "timezone": "America/New_York", "locale": "en-US", "sendingDomain": "email.shopstyleretail.com" },
+    { "mid": "5000012", "name": "ShopStyle CA", "timezone": "America/Toronto", "locale": "en-CA", "sendingDomain": "email.shopstyleretail.ca" },
+    { "mid": "5000013", "name": "ShopStyle Outlet", "timezone": "America/New_York", "locale": "en-US", "sendingDomain": "email.shopstyleoutlet.com" },
+    { "mid": "5000099", "name": "ShopStyle QA/Sandbox", "timezone": "America/New_York", "locale": "en-US", "sendingDomain": "email-qa.shopstyleretail.com" }
+  ]
+}

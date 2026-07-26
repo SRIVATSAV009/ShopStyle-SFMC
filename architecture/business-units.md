@@ -39,23 +39,8 @@ Sharing is configured via **Contact Builder → Shared Data Extensions**, granti
 ## Business Unit Provisioning (Enterprise 2.0)
 
 Provisioning is executed via the SOAP `Account` object (`ClientID` context switch) or the Setup UI. The
-scripted definition used by `deployment/scripts/deploy-business-units.js` is:
-
-```json
-{
-  "parentBusinessUnit": {
-    "mid": "5000001",
-    "name": "ShopStyle Retail Enterprise 2.0",
-    "timezone": "America/New_York"
-  },
-  "childBusinessUnits": [
-    { "mid": "5000011", "name": "ShopStyle US", "timezone": "America/New_York", "locale": "en-US", "sendingDomain": "email.shopstyleretail.com" },
-    { "mid": "5000012", "name": "ShopStyle CA", "timezone": "America/Toronto", "locale": "en-CA", "sendingDomain": "email.shopstyleretail.ca" },
-    { "mid": "5000013", "name": "ShopStyle Outlet", "timezone": "America/New_York", "locale": "en-US", "sendingDomain": "email.shopstyleoutlet.com" },
-    { "mid": "5000099", "name": "ShopStyle QA/Sandbox", "timezone": "America/New_York", "locale": "en-US", "sendingDomain": "email-qa.shopstyleretail.com" }
-  ]
-}
-```
+scripted definition used by [`deployment/scripts/deploy-business-units.js`](../deployment/scripts/deploy-business-units.js)
+is [`config/business-units.json`](../config/business-units.json).
 
 ## Enterprise Roles (least-privilege model)
 
