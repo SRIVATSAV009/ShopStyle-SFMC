@@ -1,0 +1,13 @@
+{
+  "entrySourceType": "SalesforceDataExtension",
+  "dataExtensionKey": "DE_SHOPSTYLE_CARTACTIVITY",
+  "filter": "CartStatus = 'Abandoned' AND RecoveryEmailsSent = 0",
+  "schedule": {
+    "type": "Recurring",
+    "interval": 15,
+    "unit": "Minutes",
+    "startDate": "2026-01-01T00:00:00Z"
+  },
+  "entryContactKeyField": "SubscriberKey",
+  "notes": "Populated every 15 minutes by automation-studio/sql/11-detect-abandoned-carts.sql. The journey's own decision splits re-check CartStatus at send time in case the shopper converts mid-journey."
+}

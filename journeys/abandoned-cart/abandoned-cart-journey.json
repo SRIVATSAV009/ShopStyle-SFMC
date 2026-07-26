@@ -1,0 +1,158 @@
+{
+  "key": "JOURNEY_ABANDONED_CART_SHOPSTYLE_US",
+  "name": "Abandoned Cart Recovery - ShopStyle US",
+  "description": "3-touch cart recovery series with escalating discount incentive and SMS assist, entered from a Data Extension source populated by the 15-minute abandonment-detection automation.",
+  "version": 1,
+  "entrySource": { "$ref": "entry-source.json" },
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "NoReentryUntilExit",
+  "exitCriteria": {
+    "type": "SQLQuery",
+    "description": "Exit if the subscriber unsubscribes/suppresses at any point.",
+    "query": "SELECT SubscriberKey FROM ShopStyle_Subscribers WHERE SubscriberStatus = 'Unsubscribed' OR EmailOptIn = 0"
+  },
+  "activities": [
+    {
+      "key": "DECISION-STILL-ABANDONED-1",
+      "type": "MultiCriteriaDecision",
+      "name": "Cart Still Abandoned?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "StillAbandoned", "criteria": "EXISTS(ShopStyle_CartActivity WHERE CartId = Entry.CartId AND CartStatus = 'Abandoned')" },
+          { "name": "Converted", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "StillAbandoned", "next": "EMAIL-1-REMINDER" },
+        { "branchName": "Converted", "next": "EXIT-CONVERTED-EARLY" }
+      ]
+    },
+    {
+      "key": "EMAIL-1-REMINDER",
+      "type": "EmailSend",
+      "name": "Cart Reminder - No Discount",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_CART_01_REMINDER",
+        "emailAssetPath": "../../email-templates/abandoned-cart/cart-email-1-reminder.html",
+        "subjectLine": "You left something in your cart"
+      },
+      "outcomes": [{ "next": "WAIT-24H-1" }]
+    },
+    {
+      "key": "WAIT-24H-1",
+      "type": "Wait",
+      "name": "Wait 24 Hours",
+      "configurationArguments": { "waitDuration": 24, "waitUnit": "Hours" },
+      "outcomes": [{ "next": "DECISION-STILL-ABANDONED-2" }]
+    },
+    {
+      "key": "DECISION-STILL-ABANDONED-2",
+      "type": "MultiCriteriaDecision",
+      "name": "Cart Still Abandoned?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "StillAbandoned", "criteria": "EXISTS(ShopStyle_CartActivity WHERE CartId = Entry.CartId AND CartStatus = 'Abandoned')" },
+          { "name": "Converted", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "StillAbandoned", "next": "EMAIL-2-DISCOUNT10" },
+        { "branchName": "Converted", "next": "EXIT-CONVERTED-MID" }
+      ]
+    },
+    {
+      "key": "EMAIL-2-DISCOUNT10",
+      "type": "EmailSend",
+      "name": "Cart Reminder - 10% Off",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_CART_02_DISCOUNT10",
+        "emailAssetPath": "../../email-templates/abandoned-cart/cart-email-2-discount.html",
+        "subjectLine": "Still thinking it over? Here's 10% off",
+        "notes": "Allocates a code from ShopStyle_DiscountCodePool (CampaignType=AbandonedCart10) via ampscript/email/allocate-discount-code.amp"
+      },
+      "outcomes": [{ "next": "DECISION-SMS-ELIGIBLE" }]
+    },
+    {
+      "key": "DECISION-SMS-ELIGIBLE",
+      "type": "MultiCriteriaDecision",
+      "name": "SMS Opt-in Check",
+      "configurationArguments": {
+        "branches": [
+          { "name": "SMSEligible", "criteria": "SMSOptIn = true" },
+          { "name": "SMSNotEligible", "criteria": "SMSOptIn = false", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "SMSEligible", "next": "WAIT-2H-SMS" },
+        { "branchName": "SMSNotEligible", "next": "WAIT-48H-2" }
+      ]
+    },
+    {
+      "key": "WAIT-2H-SMS",
+      "type": "Wait",
+      "name": "Wait 2 Hours Before SMS",
+      "configurationArguments": { "waitDuration": 2, "waitUnit": "Hours" },
+      "outcomes": [{ "next": "DECISION-STILL-ABANDONED-SMS" }]
+    },
+    {
+      "key": "DECISION-STILL-ABANDONED-SMS",
+      "type": "MultiCriteriaDecision",
+      "name": "Cart Still Abandoned Before SMS?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "StillAbandoned", "criteria": "EXISTS(ShopStyle_CartActivity WHERE CartId = Entry.CartId AND CartStatus = 'Abandoned')" },
+          { "name": "Converted", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "StillAbandoned", "next": "SMS-SEND-CART" },
+        { "branchName": "Converted", "next": "EXIT-CONVERTED-MID" }
+      ]
+    },
+    {
+      "key": "SMS-SEND-CART",
+      "type": "SMSSend",
+      "name": "Cart Recovery SMS",
+      "configurationArguments": {
+        "messageKey": "SMS_CART_RECOVERY",
+        "body": "Your ShopStyle cart is waiting — use code {{DiscountCode}} for 10% off. Complete checkout: {{shortURL}} Reply STOP to opt out.",
+        "keywordProgram": "SHOPSTYLE"
+      },
+      "outcomes": [{ "next": "WAIT-46H-2" }]
+    },
+    { "key": "WAIT-46H-2", "type": "Wait", "name": "Wait 46 Hours (to align with non-SMS branch)", "configurationArguments": { "waitDuration": 46, "waitUnit": "Hours" }, "outcomes": [{ "next": "DECISION-STILL-ABANDONED-3" }] },
+    { "key": "WAIT-48H-2", "type": "Wait", "name": "Wait 48 Hours", "configurationArguments": { "waitDuration": 48, "waitUnit": "Hours" }, "outcomes": [{ "next": "DECISION-STILL-ABANDONED-3" }] },
+    {
+      "key": "DECISION-STILL-ABANDONED-3",
+      "type": "MultiCriteriaDecision",
+      "name": "Cart Still Abandoned?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "StillAbandoned", "criteria": "EXISTS(ShopStyle_CartActivity WHERE CartId = Entry.CartId AND CartStatus = 'Abandoned')" },
+          { "name": "Converted", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "StillAbandoned", "next": "EMAIL-3-DISCOUNT15" },
+        { "branchName": "Converted", "next": "EXIT-CONVERTED-LATE" }
+      ]
+    },
+    {
+      "key": "EMAIL-3-DISCOUNT15",
+      "type": "EmailSend",
+      "name": "Cart Reminder - Final Notice, 15% Off",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_CART_03_DISCOUNT15",
+        "emailAssetPath": "../../email-templates/abandoned-cart/cart-email-3-final.html",
+        "subjectLine": "Last chance: 15% off expires tonight",
+        "notes": "Allocates code CampaignType=AbandonedCart15, ExpirationDate = now + 24h enforced at allocation time"
+      },
+      "outcomes": [{ "next": "EXIT-SERIES-COMPLETE" }]
+    },
+    { "key": "EXIT-CONVERTED-EARLY", "type": "JourneyExit", "name": "Exit - Converted Before Email 1", "outcomes": [] },
+    { "key": "EXIT-CONVERTED-MID", "type": "JourneyExit", "name": "Exit - Converted Mid-Series", "outcomes": [] },
+    { "key": "EXIT-CONVERTED-LATE", "type": "JourneyExit", "name": "Exit - Converted Before Final Email", "outcomes": [] },
+    { "key": "EXIT-SERIES-COMPLETE", "type": "JourneyExit", "name": "Exit - Series Complete, Not Recovered", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "DECISION-STILL-ABANDONED-1" }
+}
