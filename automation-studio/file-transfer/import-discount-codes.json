@@ -1,0 +1,19 @@
+{
+  "activityName": "Import-Discount-Codes",
+  "type": "FileTransfer",
+  "direction": "Inbound",
+  "description": "Pulls newly-generated single-use discount codes from the promotions platform, staged for automation-studio/sql/12-replenish-discount-pool.sql.",
+  "source": {
+    "protocol": "SFTP",
+    "host": "sftp.shopstyleretail-commerce.internal",
+    "port": 22,
+    "remotePath": "/outbound/promo-codes/",
+    "filePattern": "discount_codes_*.csv.pgp",
+    "authMethod": "SSHKey",
+    "credentialRef": "config/credentials.json#commercePlatformSftp"
+  },
+  "destination": { "location": "Marketing Cloud Safehouse", "path": "Import/DiscountCodes/Inbound/" },
+  "decryption": { "enabled": true, "method": "PGP", "privateKeyRef": "config/credentials.json#pgpPrivateKey_ProductFeed" },
+  "postProcessing": { "moveProcessedFileTo": "Import/DiscountCodes/Archive/", "onFailure": "Import/DiscountCodes/Error/" },
+  "nextActivity": "Import-Discount-Codes-To-DE (loads Staging_DiscountCodeImport)"
+}

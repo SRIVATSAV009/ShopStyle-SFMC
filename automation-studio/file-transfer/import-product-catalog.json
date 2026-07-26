@@ -1,0 +1,30 @@
+{
+  "activityName": "Import-Product-Catalog",
+  "type": "FileTransfer",
+  "direction": "Inbound",
+  "description": "Pulls the nightly product feed from the commerce platform's SFTP drop, decrypts it, and stages it for the Import Activity that loads Shared_ProductCatalog.",
+  "source": {
+    "protocol": "SFTP",
+    "host": "sftp.shopstyleretail-commerce.internal",
+    "port": 22,
+    "remotePath": "/outbound/product-feed/",
+    "filePattern": "product_catalog_*.csv.pgp",
+    "authMethod": "SSHKey",
+    "credentialRef": "config/credentials.json#commercePlatformSftp"
+  },
+  "destination": {
+    "location": "Marketing Cloud Safehouse",
+    "path": "Import/ProductCatalog/Inbound/"
+  },
+  "decryption": {
+    "enabled": true,
+    "method": "PGP",
+    "privateKeyRef": "config/credentials.json#pgpPrivateKey_ProductFeed",
+    "notes": "See docs/security-guide.md#pgp-key-management for key rotation policy."
+  },
+  "postProcessing": {
+    "moveProcessedFileTo": "Import/ProductCatalog/Archive/",
+    "onFailure": "Import/ProductCatalog/Error/"
+  },
+  "nextActivity": "Import-Product-Catalog-To-DE (Import Activity, see automation-studio/config/product-catalog-etl-automation.json)"
+}

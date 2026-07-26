@@ -1,0 +1,27 @@
+{
+  "activityName": "Export-Order-Archive",
+  "type": "FileTransfer",
+  "direction": "Outbound",
+  "description": "Exports ShopStyle_Orders_Archive (staged by automation-studio/sql/10-archive-aged-orders.sql) as a PGP-encrypted CSV to the enterprise data lake before the native retention policy deletes the source rows.",
+  "source": {
+    "dataExtension": "ShopStyle_Orders_Archive",
+    "format": "CSV",
+    "includeHeaders": true
+  },
+  "encryption": {
+    "enabled": true,
+    "method": "PGP",
+    "publicKeyRef": "config/credentials.json#pgpPublicKey_DataLake",
+    "notes": "Encrypted with the data lake team's public key; only their systems hold the matching private key — see docs/security-guide.md#pgp-key-management."
+  },
+  "destination": {
+    "protocol": "SFTP",
+    "host": "sftp.shopstyleretail-datalake.internal",
+    "port": 22,
+    "remotePath": "/inbound/mc-order-archive/",
+    "filePattern": "orders_archive_{YYYYMMDD}.csv.pgp",
+    "authMethod": "SSHKey",
+    "credentialRef": "config/credentials.json#dataLakeSftp"
+  },
+  "postProcessing": { "truncateSourceAfterSuccessfulExport": true }
+}

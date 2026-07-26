@@ -1,0 +1,22 @@
+{
+  "activityName": "Export-Anonymized-Orders",
+  "type": "FileTransfer",
+  "direction": "Outbound",
+  "description": "Delivers the PGP-encrypted anonymized order extract (Data Extract Activity output) to the BI team's SFTP landing zone.",
+  "source": { "extractOutputOf": "Extract-Anonymized-Orders" },
+  "encryption": {
+    "enabled": true,
+    "method": "PGP",
+    "publicKeyRef": "config/credentials.json#pgpPublicKey_DataLake"
+  },
+  "destination": {
+    "protocol": "SFTP",
+    "host": "sftp.shopstyleretail-datalake.internal",
+    "port": 22,
+    "remotePath": "/inbound/mc-anonymized-orders/",
+    "filePattern": "anonymized_orders_{YYYYMMDD}.csv.pgp",
+    "authMethod": "SSHKey",
+    "credentialRef": "config/credentials.json#dataLakeSftp"
+  },
+  "postProcessing": { "deleteLocalExtractAfterTransfer": true }
+}

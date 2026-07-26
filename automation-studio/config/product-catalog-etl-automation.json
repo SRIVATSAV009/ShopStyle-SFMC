@@ -1,0 +1,74 @@
+{
+  "automationName": "Product-Catalog-Nightly-ETL",
+  "customerKey": "AUTO_PRODUCT_CATALOG_ETL",
+  "description": "End-to-end nightly ETL: SFTP inbound PGP-encrypted feed -> decrypt -> import to staging -> SQL normalize/validate -> promote to Shared_ProductCatalog -> data extract for BI -> encrypted export -> cleanup. Demonstrates every Automation Studio activity type used in this program.",
+  "schedule": { "type": "Daily", "startTime": "00:30", "timezone": "America/New_York" },
+  "steps": [
+    {
+      "step": 1,
+      "description": "Inbound File Transfer + PGP Decryption",
+      "activities": [
+        { "type": "FileTransfer", "name": "Import-Product-Catalog", "config": "../file-transfer/import-product-catalog.json" }
+      ]
+    },
+    {
+      "step": 2,
+      "description": "Import Activity: CSV -> Staging Data Extension",
+      "activities": [
+        {
+          "type": "Import",
+          "name": "Import-Product-Catalog-To-Staging",
+          "fileNamingPattern": "product_catalog_*.csv",
+          "sourceFolder": "Import/ProductCatalog/Inbound/",
+          "targetDataExtension": "Staging_ProductCatalogImport",
+          "importType": "Overwrite",
+          "fieldMapping": "Header row match (SKU, ProductName, Category, SubCategory, Brand, Price, SalePrice, InStock, InventoryCount, ImageURL, ProductURL, AvgRating)",
+          "delimiter": ",",
+          "notes": "Overwrite import type is intentional — the feed is always a full nightly snapshot, not incremental."
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "description": "SQL Activity: Validate + Promote to Live Catalog",
+      "activities": [
+        { "type": "SQLQuery", "name": "Validate-And-Promote-Catalog", "file": "../sql/18-validate-and-promote-catalog.sql", "targetDataExtension": "Shared_ProductCatalog" }
+      ]
+    },
+    {
+      "step": 4,
+      "description": "Script Activity: Post-import row-count sanity check with automated halt on anomaly",
+      "activities": [
+        { "type": "Script", "name": "Validate-Catalog-Row-Count", "file": "../script-activities/validate-catalog-row-count.ssjs" }
+      ]
+    },
+    {
+      "step": 5,
+      "description": "Data Extract Activity: anonymized nightly order snapshot for BI team",
+      "activities": [
+        {
+          "type": "DataExtract",
+          "name": "Extract-Anonymized-Orders",
+          "sourceQuery": "../sql/19-extract-anonymized-orders.sql",
+          "extractType": "CSV",
+          "extractFileNaming": "anonymized_orders_{YYYYMMDD}.csv",
+          "notes": "SubscriberKey is one-way hashed (SHA-256 + salt) in the source query; no PII leaves the platform in this extract."
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "description": "Outbound File Transfer + PGP Encryption",
+      "activities": [
+        { "type": "FileTransfer", "name": "Export-Anonymized-Orders", "config": "../file-transfer/export-anonymized-orders.json" }
+      ]
+    }
+  ],
+  "errorHandling": {
+    "onActivityFailure": "HaltAutomationAndNotify",
+    "retryPolicy": { "maxRetries": 2, "retryDelayMinutes": 15 },
+    "notifications": { "onFailure": ["data-eng@shopstyleretail.com"], "onSuccess": [] },
+    "loggingTable": "Automation_ErrorLog",
+    "loggingUtility": "../../ssjs/shared/error-logger.ssjs"
+  }
+}
