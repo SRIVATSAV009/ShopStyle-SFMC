@@ -1,0 +1,22 @@
+%%[
+  /* Shared legal/unsubscribe footer — include via ContentBlockByKey("Shared_BrandContentLibrary.LegalFooter_US")
+     Requires: EmailAddress, SubscriberKey in scope (email send context) */
+  VAR @currentYear
+  SET @currentYear = Format(Now(), "yyyy")
+]%%
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#767676;">
+  <tr>
+    <td style="padding:24px 20px;text-align:center;border-top:1px solid #e5e5e5;">
+      <p style="margin:0 0 8px;">
+        ShopStyle Retail, 450 Fifth Avenue, New York, NY 10018
+      </p>
+      <p style="margin:0 0 8px;">
+        You're receiving this email because you subscribed at shopstyleretail.com.
+        <a href="%%unsub_center_url%%" style="color:#767676;text-decoration:underline;">Manage preferences</a>
+        &nbsp;|&nbsp;
+        <a href="%%unsub_center_url%%" style="color:#767676;text-decoration:underline;">Unsubscribe</a>
+      </p>
+      <p style="margin:0;">&copy; %%=v(@currentYear)=%% ShopStyle Retail. All rights reserved.</p>
+    </td>
+  </tr>
+</table>

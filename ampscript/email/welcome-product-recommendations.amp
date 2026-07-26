@@ -1,0 +1,77 @@
+%%[
+  /* Welcome Email 2 — Category-Personalized Product Grid
+     Resolves the subscriber's top preferred categories (ShopStyle_Preferences) and pulls
+     up to 4 in-stock products per category from Shared_ProductCatalog.
+     In scope: _subscriberkey (email send context) */
+
+  VAR @subKey, @rowCount, @womens, @mens, @kids, @home, @beauty
+  VAR @primaryCategory, @secondaryCategory, @productRows, @i, @sku, @name, @price, @salePrice, @img, @url
+
+  SET @subKey = _subscriberkey
+
+  /* Pull category flags */
+  SET @rowCount = RowCount(LookupRows("ShopStyle_Preferences", "SubscriberKey", @subKey))
+  IF @rowCount > 0 THEN
+    SET @row = Row(LookupRows("ShopStyle_Preferences", "SubscriberKey", @subKey), 1)
+    SET @womens = Field(@row, "CategoryWomens")
+    SET @mens = Field(@row, "CategoryMens")
+    SET @kids = Field(@row, "CategoryKids")
+    SET @home = Field(@row, "CategoryHome")
+    SET @beauty = Field(@row, "CategoryBeauty")
+  ELSE
+    /* No preference record yet — default to Women's + Men's */
+    SET @womens = true
+    SET @mens = true
+  ENDIF
+
+  /* Pick the top two true categories, Women's/Men's take priority as highest-converting */
+  SET @primaryCategory = ""
+  SET @secondaryCategory = ""
+  IF @womens == true THEN SET @primaryCategory = "Womens" ENDIF
+  IF @mens == true AND @primaryCategory == "" THEN SET @primaryCategory = "Mens" ENDIF
+  IF @mens == true AND @primaryCategory != "" AND @secondaryCategory == "" THEN SET @secondaryCategory = "Mens" ENDIF
+  IF @beauty == true AND @secondaryCategory == "" THEN SET @secondaryCategory = "Beauty" ENDIF
+  IF @home == true AND @secondaryCategory == "" THEN SET @secondaryCategory = "Home" ENDIF
+  IF @kids == true AND @secondaryCategory == "" THEN SET @secondaryCategory = "Kids" ENDIF
+  IF @primaryCategory == "" THEN SET @primaryCategory = "Womens" ENDIF
+  IF @secondaryCategory == "" THEN SET @secondaryCategory = "Mens" ENDIF
+
+  /* LookupOrderedRows: top 4 in-stock, highest-rated products across the two categories */
+  SET @productRows = LookupOrderedRows("Shared_ProductCatalog", 4, "AvgRating DESC",
+    "Category", @primaryCategory, "InStock", 1)
+]%%
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;">
+  <tr>
+    <td style="padding:8px 20px 20px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          %%[ IF RowCount(@productRows) > 0 THEN ]%%
+          %%[ FOR @i = 1 TO RowCount(@productRows) DO ]%%
+            %%[
+              SET @sku = Field(Row(@productRows, @i), "SKU")
+              SET @name = Field(Row(@productRows, @i), "ProductName")
+              SET @price = Field(Row(@productRows, @i), "Price")
+              SET @salePrice = Field(Row(@productRows, @i), "SalePrice")
+              SET @img = Field(Row(@productRows, @i), "ImageURL")
+              SET @url = Field(Row(@productRows, @i), "ProductURL")
+            ]%%
+            <td width="25%" style="padding:4px;vertical-align:top;text-align:center;">
+              <a href="%%=RedirectTo(Concat(@url, "?utm_source=email&utm_campaign=welcome_journey&sku=", @sku))=%%" style="text-decoration:none;color:#111;">
+                <img src="%%=v(@img)=%%" alt="%%=v(@name)=%%" width="120" style="width:100%;max-width:120px;border:1px solid #eee;" />
+                <p style="font-size:12px;margin:6px 0 2px;color:#111;">%%=v(@name)=%%</p>
+                %%[ IF @salePrice > 0 AND @salePrice < @price THEN ]%%
+                  <p style="font-size:12px;margin:0;"><span style="text-decoration:line-through;color:#999;">$%%=FormatNumber(@price,"N2")=%%</span> <span style="color:#c00;font-weight:bold;">$%%=FormatNumber(@salePrice,"N2")=%%</span></p>
+                %%[ ELSE ]%%
+                  <p style="font-size:12px;margin:0;color:#111;">$%%=FormatNumber(@price,"N2")=%%</p>
+                %%[ ENDIF ]%%
+              </a>
+            </td>
+          %%[ NEXT @i ]%%
+          %%[ ELSE ]%%
+            <td style="padding:20px;text-align:center;color:#767676;">Check out what's new at ShopStyle — <a href="https://shopstyleretail.com/new-arrivals">shop new arrivals</a>.</td>
+          %%[ ENDIF ]%%
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
