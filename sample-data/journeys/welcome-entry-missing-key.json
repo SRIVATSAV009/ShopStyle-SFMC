@@ -1,0 +1,10 @@
+{
+  "ContactKey": "",
+  "EventDefinitionKey": "APIEvent-Welcome-Signup",
+  "Data": {
+    "SubscriberKey": "",
+    "EmailAddress": "incomplete.signup@example.com",
+    "SignupSource": "Web",
+    "SignupDate": "2026-07-25T14:32:00Z"
+  }
+}

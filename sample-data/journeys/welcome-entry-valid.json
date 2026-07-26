@@ -1,0 +1,12 @@
+{
+  "ContactKey": "SUB-000482913",
+  "EventDefinitionKey": "APIEvent-Welcome-Signup",
+  "Data": {
+    "SubscriberKey": "SUB-000482913",
+    "EmailAddress": "jane.doe@example.com",
+    "FirstName": "Jane",
+    "SignupSource": "Web",
+    "SignupDate": "2026-07-25T14:32:00Z",
+    "PromoCodeIssued": "WELCOME15"
+  }
+}
