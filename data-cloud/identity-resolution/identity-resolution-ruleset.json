@@ -1,0 +1,49 @@
+{
+  "rulesetName": "ShopStyle_Unified_Individual",
+  "description": "Resolves records from Marketing Cloud (ShopStyle_Subscribers), Sales Cloud (_SFContact/_SFLead), and commerce POS data into a single Unified Individual ID, written back to Shared_CustomerIdentityBridge.",
+  "dataStreams": [
+    { "name": "MC_Subscribers", "source": "Marketing Cloud", "dataExtension": "ShopStyle_Subscribers", "primaryKey": "SubscriberKey" },
+    { "name": "SF_Contacts", "source": "Sales Cloud", "object": "Contact", "primaryKey": "Id" },
+    { "name": "POS_Customers", "source": "Commerce/POS Platform", "object": "CustomerProfile", "primaryKey": "PosCustomerId" }
+  ],
+  "matchRules": [
+    {
+      "ruleName": "Exact-Email-Match",
+      "priority": 1,
+      "matchType": "Exact",
+      "fields": ["EmailAddress"],
+      "confidenceScore": 1.00
+    },
+    {
+      "ruleName": "Exact-Phone-Match",
+      "priority": 2,
+      "matchType": "Exact",
+      "fields": ["MobileNumber"],
+      "normalizationRules": ["StripNonNumeric", "AssumeE164WithDefaultCountryCode:+1"],
+      "confidenceScore": 0.95
+    },
+    {
+      "ruleName": "Fuzzy-Name-Address-Match",
+      "priority": 3,
+      "matchType": "Fuzzy",
+      "fields": ["FirstName", "LastName", "PostalCode"],
+      "fuzzyAlgorithm": "Jaro-Winkler",
+      "threshold": 0.90,
+      "confidenceScore": 0.75,
+      "notes": "Used primarily to link in-store POS purchases (often captured with just name+zip at checkout) to an existing email-identified individual."
+    }
+  ],
+  "reconciliationRules": {
+    "survivorshipStrategy": "MostRecentlyUpdatedWins",
+    "fieldOverrides": {
+      "EmailAddress": "MarketingCloudSourceWins",
+      "MailingAddress": "SalesCloudSourceWins"
+    }
+  },
+  "outputMapping": {
+    "targetDataExtension": "Shared_CustomerIdentityBridge",
+    "unifiedIdField": "UnifiedIndividualId",
+    "confidenceField": "MatchConfidenceScore",
+    "syncSchedule": "Every 30 minutes, feeding automation-studio/sql/20-sync-identity-bridge.sql downstream reconciliation"
+  }
+}

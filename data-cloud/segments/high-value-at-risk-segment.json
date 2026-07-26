@@ -1,0 +1,20 @@
+{
+  "segmentName": "High_Value_At_Risk",
+  "description": "Individuals with lifetime spend >= $5,000 (Data Cloud Calculated Insight) who have not ordered in 90+ days — proactive retention target distinct from the generic Winback journey's 90-day inactivity trigger (which is engagement-based, not spend-based).",
+  "sourceDMO": "Customer_Lifetime_Value (calculated-insights/customer-lifetime-value.sql)",
+  "criteria": {
+    "operator": "AND",
+    "conditions": [
+      { "field": "ChurnRiskSegment", "operator": "equals", "value": "HighValueAtRisk" },
+      { "field": "DaysSinceLastOrder", "operator": "greaterThanOrEqual", "value": 90 },
+      { "field": "DaysSinceLastOrder", "operator": "lessThan", "value": 270, "notes": "Beyond 270 days, the standard Winback sunset flow already governs suppression" }
+    ]
+  },
+  "refreshSchedule": "Daily, following calculated-insights refresh at 03:30",
+  "activation": {
+    "target": "Marketing Cloud",
+    "targetDataExtension": "DataCloud_Segment_HighValueAtRisk",
+    "activationType": "DataExtensionRefresh",
+    "consumedBy": "journeys/vip-retention/vip-retention-journey.json (DE entry source)"
+  }
+}

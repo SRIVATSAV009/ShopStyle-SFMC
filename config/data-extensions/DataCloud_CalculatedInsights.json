@@ -1,0 +1,17 @@
+{
+  "name": "DataCloud_CalculatedInsights",
+  "customerKey": "DE_DATACLOUD_CALCULATEDINSIGHTS",
+  "description": "Marketing Cloud landing DE for the Data Cloud activation of customer-lifetime-value.sql + category-affinity.sql, refreshed daily. Joined to ShopStyle_Subscribers via Shared_CustomerIdentityBridge.",
+  "isSendable": false,
+  "fields": [
+    { "name": "UnifiedIndividualId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "LifetimeSpend", "type": "Decimal", "scale": 2 },
+    { "name": "LifetimeOrderCount", "type": "Number" },
+    { "name": "AvgOrderValue", "type": "Decimal", "scale": 2 },
+    { "name": "DaysSinceLastOrder", "type": "Number" },
+    { "name": "ChurnRiskSegment", "type": "Text", "length": 30 },
+    { "name": "TopCategory", "type": "Text", "length": 60 },
+    { "name": "SecondCategory", "type": "Text", "length": 60 },
+    { "name": "LastRefreshedDate", "type": "Date" }
+  ]
+}
