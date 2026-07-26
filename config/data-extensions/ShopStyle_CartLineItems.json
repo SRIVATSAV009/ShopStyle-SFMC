@@ -1,0 +1,16 @@
+{
+  "name": "ShopStyle_CartLineItems",
+  "customerKey": "DE_SHOPSTYLE_CARTLINEITEMS",
+  "description": "Normalized 1:many line items per cart (written alongside ShopStyle_CartActivity by the same real-time cart API), queried via LookupOrderedRows for abandoned-cart email/SMS product blocks.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "None", "notes": "Cascades with parent ShopStyle_CartActivity (14-day retention)" },
+  "fields": [
+    { "name": "CartLineItemId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "CartId", "type": "Text", "length": 60, "isRequired": true, "notes": "FK -> ShopStyle_CartActivity.CartId" },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "SKU", "type": "Text", "length": 40, "isRequired": true, "notes": "FK -> Shared_ProductCatalog.SKU" },
+    { "name": "Quantity", "type": "Number" },
+    { "name": "UnitPrice", "type": "Decimal", "scale": 2 },
+    { "name": "AddedToCartDate", "type": "Date" }
+  ]
+}

@@ -8,6 +8,7 @@
     { "name": "Orders_to_LineItems", "parent": "ShopStyle_Orders", "parentField": "OrderId", "child": "ShopStyle_OrderLineItems", "childField": "OrderId", "cardinality": "OneToMany" },
     { "name": "Subscribers_to_Loyalty", "parent": "ShopStyle_Subscribers", "parentField": "SubscriberKey", "child": "ShopStyle_Loyalty", "childField": "SubscriberKey", "cardinality": "OneToOne" },
     { "name": "Subscribers_to_CartActivity", "parent": "ShopStyle_Subscribers", "parentField": "SubscriberKey", "child": "ShopStyle_CartActivity", "childField": "SubscriberKey", "cardinality": "OneToMany" },
+    { "name": "CartActivity_to_CartLineItems", "parent": "ShopStyle_CartActivity", "parentField": "CartId", "child": "ShopStyle_CartLineItems", "childField": "CartId", "cardinality": "OneToMany" },
     { "name": "Subscribers_to_ConsentLog", "parent": "ShopStyle_Subscribers", "parentField": "SubscriberKey", "child": "ShopStyle_ConsentLog", "childField": "SubscriberKey", "cardinality": "OneToMany" },
     { "name": "Subscribers_to_IdentityBridge", "parent": "ShopStyle_Subscribers", "parentField": "SubscriberKey", "child": "Shared_CustomerIdentityBridge", "childField": "SubscriberKey", "cardinality": "OneToOne", "additionalJoin": { "field": "BusinessUnitMID", "source": "context.mid" } }
   ]

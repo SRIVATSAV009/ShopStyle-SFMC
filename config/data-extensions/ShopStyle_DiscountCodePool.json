@@ -1,0 +1,17 @@
+{
+  "name": "ShopStyle_DiscountCodePool",
+  "customerKey": "DE_SHOPSTYLE_DISCOUNTCODEPOOL",
+  "description": "Pre-generated unique single-use discount codes, batch-loaded nightly from the commerce/promotions platform (see automation-studio/sql/12-replenish-discount-pool.sql). Allocated atomically at email/SMS send time.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "None" },
+  "fields": [
+    { "name": "DiscountCode", "type": "Text", "length": 30, "isPrimaryKey": true, "isRequired": true },
+    { "name": "CampaignType", "type": "Text", "length": 30, "isRequired": true, "notes": "AbandonedCart10 | AbandonedCart15 | WelcomeSeries" },
+    { "name": "DiscountPercent", "type": "Number" },
+    { "name": "IsUsed", "type": "Boolean", "defaultValue": "false" },
+    { "name": "AllocatedToSubscriberKey", "type": "Text", "length": 60 },
+    { "name": "AllocatedDate", "type": "Date" },
+    { "name": "ExpirationDate", "type": "Date" },
+    { "name": "RedeemedDate", "type": "Date" }
+  ]
+}
