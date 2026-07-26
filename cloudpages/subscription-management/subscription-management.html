@@ -1,0 +1,120 @@
+<script runat="server" language="javascript">
+Platform.Load("core", "1.1.1");
+
+/*
+  CloudPage: Subscription Management
+  URL: https://offers.shopstyleretail.com/subscription-management?token={CloudPage_AccessToken.Token}
+  Offers a graduated choice (reduce frequency vs full unsubscribe) rather than a single unsubscribe
+  button — reducing outright opt-outs by giving subscribers a middle option, a standard SFMC
+  preference-center best practice.
+*/
+
+var subscriberKey = null, tokenValid = false, actionTaken = null, errorMessage = null;
+var emailAddress = "";
+
+function resolveToken(token) {
+    if (!token || token.length < 10) return null;
+    var rows = Platform.Function.LookupRows("CloudPage_AccessToken", "Token", token);
+    if (rows.length === 0) return null;
+    if (new Date(rows[0]["ExpirationDate"]) < new Date()) return null;
+    return rows[0]["SubscriberKey"];
+}
+
+function fullUnsubscribe(subKey, email) {
+    Platform.Function.UpdateData("ShopStyle_Subscribers", 1,
+        "SubscriberKey", subKey, "SubscriberStatus", "Unsubscribed", "EmailOptIn", "false", "LastModifiedDate", Now());
+
+    var existingSuppression = Platform.Function.LookupRows("Shared_GlobalSuppressionList", "EmailAddress", email);
+    if (existingSuppression.length === 0) {
+        Platform.Function.InsertData("Shared_GlobalSuppressionList",
+            "EmailAddress", email, "SuppressionReason", "Unsubscribe", "SuppressedDate", Now(),
+            "SourceBU", "5000011", "SourceJourneyOrCampaign", "SubscriptionManagementCloudPage");
+    }
+
+    Platform.Function.InsertData("ShopStyle_ConsentLog",
+        "ConsentLogId", Concat("UNSUB-", subKey, "-", Platform.Function.GetCurrentTimeUnixTimestamp()),
+        "SubscriberKey", subKey, "ChannelType", "Email", "ConsentAction", "OptOut",
+        "ConsentSource", "SubscriptionMgmt", "Timestamp", Now());
+}
+
+function reduceFrequency(subKey) {
+    var existing = Platform.Function.LookupRows("ShopStyle_Preferences", "SubscriberKey", subKey);
+    if (existing.length > 0) {
+        Platform.Function.UpdateData("ShopStyle_Preferences", 1, "SubscriberKey", subKey,
+            "FrequencyPreference", "Reduced", "LastUpdated", Now(), "UpdateSource", "SubscriptionMgmt");
+    } else {
+        Platform.Function.InsertData("ShopStyle_Preferences", "SubscriberKey", subKey,
+            "FrequencyPreference", "Reduced", "LastUpdated", Now(), "UpdateSource", "SubscriptionMgmt");
+    }
+}
+
+var token = Request.GetQueryStringParameter("token");
+subscriberKey = resolveToken(token);
+tokenValid = subscriberKey !== null;
+
+if (tokenValid) {
+    var subRows = Platform.Function.LookupRows("ShopStyle_Subscribers", "SubscriberKey", subscriberKey);
+    if (subRows.length > 0) { emailAddress = subRows[0]["EmailAddress"]; }
+
+    if (Request.Method == "POST") {
+        var action = Request.GetFormField("action");
+        try {
+            if (action === "unsubscribe") {
+                fullUnsubscribe(subscriberKey, emailAddress);
+                actionTaken = "unsubscribed";
+            } else if (action === "reduce") {
+                reduceFrequency(subscriberKey);
+                actionTaken = "reduced";
+            } else {
+                errorMessage = "Invalid action.";
+            }
+        } catch (ex) {
+            errorMessage = "We couldn't process your request. Please try again.";
+        }
+    }
+}
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopStyle - Manage Subscription</title>
+  <link rel="stylesheet" href="/cloudpages/assets/css/shopstyle-cloudpages.css">
+</head>
+<body>
+  <div class="sp-header"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle"></div>
+  <div class="sp-container">
+    <% if (!tokenValid) { %>
+      <div class="sp-alert sp-alert-error">This link has expired. Please open a recent email from ShopStyle.</div>
+    <% } else if (actionTaken === "unsubscribed") { %>
+      <div class="sp-alert sp-alert-success">You've been unsubscribed from ShopStyle emails. We're sorry to see you go — you can resubscribe any time from shopstyleretail.com.</div>
+    <% } else if (actionTaken === "reduced") { %>
+      <div class="sp-alert sp-alert-success">Got it — you'll now receive a weekly digest instead of individual emails.</div>
+    <% } else { %>
+      <h1>Manage Your Subscription</h1>
+      <p class="sp-subtitle"><%= emailAddress %></p>
+      <% if (errorMessage) { %><div class="sp-alert sp-alert-error"><%= errorMessage %></div><% } %>
+
+      <div class="sp-alert sp-alert-info">
+        Before you go — would fewer emails work better? You can switch to a weekly digest instead of unsubscribing completely.
+      </div>
+
+      <form method="POST" action="?token=<%= token %>" style="margin-bottom:16px;">
+        <input type="hidden" name="action" value="reduce">
+        <button type="submit" class="sp-btn-primary">SEND ME FEWER EMAILS</button>
+      </form>
+
+      <form method="POST" action="?token=<%= token %>" onsubmit="return confirm('Are you sure you want to unsubscribe from all ShopStyle emails?');">
+        <input type="hidden" name="action" value="unsubscribe">
+        <button type="submit" class="sp-btn-secondary sp-btn-danger">UNSUBSCRIBE FROM ALL EMAILS</button>
+      </form>
+
+      <p style="margin-top:24px;font-size:13px;">
+        Want more control? <a href="/preference-center?token=<%= token %>">Manage detailed preferences</a>.
+      </p>
+    <% } %>
+  </div>
+  <div class="sp-footer">&copy; ShopStyle Retail. <a href="https://shopstyleretail.com/privacy">Privacy Policy</a></div>
+</body>
+</html>

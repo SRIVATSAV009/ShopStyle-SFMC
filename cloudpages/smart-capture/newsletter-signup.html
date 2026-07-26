@@ -1,0 +1,130 @@
+<script runat="server" language="javascript">
+Platform.Load("core", "1.1.1");
+
+/*
+  CloudPage: Smart Capture — Newsletter Signup Landing Page
+  URL: https://offers.shopstyleretail.com/join?utm_source=... (public, no access token — this is the
+  entry point for brand-new subscribers, e.g., from a social ad or in-store kiosk QR code).
+
+  On successful submission:
+    1. Server-side validate + dedupe check against ShopStyle_Subscribers.
+    2. Insert new ShopStyle_Subscribers row (SourceSystem = 'SmartCapture').
+    3. Log consent to ShopStyle_ConsentLog.
+    4. Fire APIEvent-Welcome-Signup via REST so the new contact enters the Welcome Journey
+       (same event contract as api/rest/event-signup.md), using an internal HttpRequest call
+       exactly like ssjs/automation/fire-fallback-events.ssjs.
+*/
+
+var successMessage = null, errorMessage = null;
+var emailInput = "", firstNameInput = "";
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function generateSubscriberKey() {
+    return "SUB-" + Platform.Function.GetCurrentTimeUnixTimestamp() + "-" + Math.floor(Math.random() * 10000);
+}
+
+function triggerWelcomeJourney(subscriberKey, email, firstName, promoCode) {
+    var restEndpoint = "https://" + Platform.Function.Lookup("Config_Environment", "Value", "Name", "RestApiSubdomain") + ".rest.marketingcloudapis.com";
+    var authToken = Platform.Function.Lookup("Config_Environment", "Value", "Name", "AutomationOAuthToken");
+
+    var payload = {
+        ContactKey: subscriberKey,
+        EventDefinitionKey: "APIEvent-Welcome-Signup",
+        Data: {
+            SubscriberKey: subscriberKey, EmailAddress: email, FirstName: firstName,
+            SignupSource: "SmartCapture", SignupDate: Now(), PromoCodeIssued: promoCode
+        }
+    };
+
+    var req = new Script.Util.HttpRequest(restEndpoint + "/interaction/v1/events");
+    req.emptyContentHandling = 0;
+    req.retries = 2;
+    req.continueOnError = true;
+    req.setHeader("Authorization", "Bearer " + authToken);
+    req.setHeader("Content-Type", "application/json");
+    req.method = "POST";
+    req.postData = Stringify(payload);
+    return req.send();
+}
+
+if (Request.Method == "POST") {
+    emailInput = Request.GetFormField("email");
+    firstNameInput = Request.GetFormField("firstName");
+
+    if (!emailInput || !isValidEmail(emailInput)) {
+        errorMessage = "Please enter a valid email address.";
+    } else {
+        var existing = Platform.Function.LookupRows("ShopStyle_Subscribers", "EmailAddress", emailInput);
+        if (existing.length > 0) {
+            errorMessage = "Looks like you're already subscribed! Check your inbox for your welcome discount, or visit your preference center to update your details.";
+        } else {
+            try {
+                var newSubKey = generateSubscriberKey();
+                var promoCode = "WELCOME15";
+
+                Platform.Function.InsertData("ShopStyle_Subscribers",
+                    "SubscriberKey", newSubKey, "EmailAddress", emailInput, "FirstName", firstNameInput || "",
+                    "BusinessUnitMID", "5000011", "EmailOptIn", "true", "SMSOptIn", "false",
+                    "SubscriberStatus", "Active", "SourceSystem", "SmartCapture",
+                    "CreatedDate", Now(), "LastModifiedDate", Now());
+
+                Platform.Function.InsertData("ShopStyle_ConsentLog",
+                    "ConsentLogId", Concat("SIGNUP-", newSubKey), "SubscriberKey", newSubKey,
+                    "ChannelType", "Email", "ConsentAction", "OptIn", "ConsentSource", "SmartCapture", "Timestamp", Now());
+
+                triggerWelcomeJourney(newSubKey, emailInput, firstNameInput, promoCode);
+
+                successMessage = "You're in! Check your inbox for your 15% off code.";
+                emailInput = ""; firstNameInput = "";
+            } catch (ex) {
+                errorMessage = "Something went wrong on our end. Please try again in a moment.";
+            }
+        }
+    }
+}
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join ShopStyle - 15% Off Your First Order</title>
+  <link rel="stylesheet" href="/cloudpages/assets/css/shopstyle-cloudpages.css">
+</head>
+<body>
+  <div class="sp-header"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle"></div>
+  <div class="sp-container" style="text-align:center;">
+    <% if (successMessage) { %>
+      <div class="sp-alert sp-alert-success"><%= successMessage %></div>
+      <a href="https://shopstyleretail.com" class="sp-btn-primary" style="text-decoration:none;">START SHOPPING</a>
+    <% } else { %>
+      <h1>Get 15% Off Your First Order</h1>
+      <p class="sp-subtitle">Sign up for ShopStyle emails and unlock your discount instantly.</p>
+      <% if (errorMessage) { %><div class="sp-alert sp-alert-error" style="text-align:left;"><%= errorMessage %></div><% } %>
+
+      <form id="signupForm" method="POST" action="" style="text-align:left;">
+        <div class="sp-field-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" value="<%= firstNameInput %>">
+        </div>
+        <div class="sp-field-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" value="<%= emailInput %>" data-validate required>
+          <span class="sp-error-message" id="email-error"></span>
+        </div>
+        <button type="submit" class="sp-btn-primary" style="width:100%;">JOIN &amp; GET 15% OFF</button>
+      </form>
+      <p style="margin-top:20px;font-size:11px;color:#999;">
+        By signing up, you agree to receive marketing emails from ShopStyle Retail. You can unsubscribe
+        at any time. See our <a href="https://shopstyleretail.com/privacy">Privacy Policy</a>.
+      </p>
+    <% } %>
+  </div>
+  <div class="sp-footer">&copy; ShopStyle Retail</div>
+  <script src="/cloudpages/assets/js/form-validation.js"></script>
+  <script>ShopStyleFormValidation.init("signupForm");</script>
+</body>
+</html>
