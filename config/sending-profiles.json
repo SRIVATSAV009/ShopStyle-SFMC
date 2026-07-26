@@ -1,0 +1,48 @@
+{
+  "sendingProfiles": [
+    {
+      "businessUnitMID": "5000011",
+      "name": "ShopStyle-US-Primary",
+      "fromName": "ShopStyle Retail",
+      "fromEmail": "hello@email.shopstyleretail.com",
+      "sendingDomain": "email.shopstyleretail.com",
+      "ipPool": "ip-pool-us-primary",
+      "dkimEnabled": true,
+      "returnPathDomain": "bounce.shopstyleretail.com",
+      "footerContentBlock": "Shared_BrandContentLibrary.LegalFooter_US"
+    },
+    {
+      "businessUnitMID": "5000012",
+      "name": "ShopStyle-CA-Primary",
+      "fromName": "ShopStyle Retail Canada",
+      "fromEmail": "bonjour@email.shopstyleretail.ca",
+      "sendingDomain": "email.shopstyleretail.ca",
+      "ipPool": "ip-pool-ca-primary",
+      "dkimEnabled": true,
+      "returnPathDomain": "bounce.shopstyleretail.ca",
+      "footerContentBlock": "Shared_BrandContentLibrary.LegalFooter_CA"
+    },
+    {
+      "businessUnitMID": "5000013",
+      "name": "ShopStyle-Outlet-Primary",
+      "fromName": "ShopStyle Outlet",
+      "fromEmail": "deals@email.shopstyleoutlet.com",
+      "sendingDomain": "email.shopstyleoutlet.com",
+      "ipPool": "ip-pool-outlet-shared",
+      "dkimEnabled": true,
+      "returnPathDomain": "bounce.shopstyleoutlet.com",
+      "footerContentBlock": "Shared_BrandContentLibrary.LegalFooter_US"
+    },
+    {
+      "businessUnitMID": "5000099",
+      "name": "ShopStyle-QA-Sandbox",
+      "fromName": "ShopStyle QA",
+      "fromEmail": "qa-noreply@email-qa.shopstyleretail.com",
+      "sendingDomain": "email-qa.shopstyleretail.com",
+      "ipPool": "ip-pool-qa",
+      "dkimEnabled": true,
+      "returnPathDomain": "bounce-qa.shopstyleretail.com",
+      "footerContentBlock": "Shared_BrandContentLibrary.LegalFooter_US"
+    }
+  ]
+}

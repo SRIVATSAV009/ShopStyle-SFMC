@@ -1,0 +1,47 @@
+{
+  "automationName": "Nightly-Contact-Hygiene",
+  "customerKey": "AUTO_NIGHTLY_CONTACT_HYGIENE",
+  "description": "Applies global suppression, refreshes engagement dates, cascades orphan deletes, and archives aged orders. See architecture/retention-policies.md.",
+  "schedule": {
+    "type": "Daily",
+    "startTime": "01:00",
+    "timezone": "America/New_York",
+    "recurrenceInterval": 1
+  },
+  "notifications": {
+    "onFailure": ["data-eng@shopstyleretail.com"],
+    "onSuccess": []
+  },
+  "steps": [
+    {
+      "step": 1,
+      "activities": [
+        { "type": "SQLQuery", "name": "Apply-Global-Suppression", "file": "../sql/01-apply-global-suppression.sql", "targetDataExtension": "ShopStyle_Subscribers" }
+      ]
+    },
+    {
+      "step": 2,
+      "activities": [
+        { "type": "SQLQuery", "name": "Refresh-Engagement-Dates", "file": "../sql/02-refresh-engagement-dates.sql", "targetDataExtension": "ShopStyle_Subscribers" }
+      ]
+    },
+    {
+      "step": 3,
+      "activities": [
+        { "type": "SQLQuery", "name": "Cascade-Delete-Orphans", "file": "../sql/09-cascade-delete-orphans.sql", "targetDataExtension": "N/A - multi-statement cleanup" }
+      ]
+    },
+    {
+      "step": 4,
+      "activities": [
+        { "type": "SQLQuery", "name": "Archive-Aged-Orders", "file": "../sql/10-archive-aged-orders.sql", "targetDataExtension": "ShopStyle_Orders_Archive" },
+        { "type": "FileTransfer", "name": "Export-Order-Archive", "config": "../file-transfer/export-order-archive.json", "runsAfter": "Archive-Aged-Orders" }
+      ]
+    }
+  ],
+  "errorHandling": {
+    "onActivityFailure": "HaltAutomationAndNotify",
+    "retryPolicy": { "maxRetries": 2, "retryDelayMinutes": 10 },
+    "logTo": "automation-studio/config/automation-run-log-schema.json"
+  }
+}

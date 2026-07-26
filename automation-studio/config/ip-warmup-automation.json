@@ -1,0 +1,24 @@
+{
+  "automationName": "IP-Warmup-Ramp-Controller",
+  "customerKey": "AUTO_IP_WARMUP_RAMP",
+  "description": "Enforces the daily send-volume cap per IP pool during warm-up. See architecture/ip-warming-strategy.md.",
+  "schedule": { "type": "Daily", "startTime": "06:00", "timezone": "America/New_York" },
+  "rampSchedule": [
+    { "dayRange": [1, 3], "dailyCapPerIP": 1000, "audienceQuery": "sql/segmentation/warmup-engaged-segment.sql" },
+    { "dayRange": [4, 7], "dailyCapPerIP": 5000 },
+    { "dayRange": [8, 11], "dailyCapPerIP": 10000 },
+    { "dayRange": [12, 15], "dailyCapPerIP": 25000 },
+    { "dayRange": [16, 19], "dailyCapPerIP": 50000 },
+    { "dayRange": [20, 23], "dailyCapPerIP": 100000 },
+    { "dayRange": [24, 27], "dailyCapPerIP": 250000 },
+    { "dayRange": [28, 30], "dailyCapPerIP": 500000 },
+    { "dayRange": [31, null], "dailyCapPerIP": null, "notes": "Uncapped steady state" }
+  ],
+  "guardrails": {
+    "maxBounceRatePercent": 2.0,
+    "maxComplaintRatePercent": 0.1,
+    "onBreach": "HoldVolumeFlat",
+    "onDoubleBreachWithin3Days": "RollBackToPriorDayVolume",
+    "monitorScript": "../../deliverability/monitors/warmup-guardrail.js"
+  }
+}
