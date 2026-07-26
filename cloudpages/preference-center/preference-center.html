@@ -1,0 +1,192 @@
+<script runat="server" language="javascript">
+Platform.Load("core", "1.1.1");
+
+/*
+  CloudPage: Preference Center
+  URL pattern: https://offers.shopstyleretail.com/preference-center?token={CloudPage_AccessToken.Token}
+  Token minted at email-send time (ampscript/cloudpages/mint-access-token.amp / legal-footer.amp) so
+  no raw SubscriberKey/EmailAddress is ever exposed in the URL.
+
+  GET  -> resolve token, load current preferences, render form
+  POST -> re-validate token, validate submitted fields server-side, persist to
+          ShopStyle_Preferences + ShopStyle_Subscribers, write a ShopStyle_ConsentLog entry, re-render
+          the form with a success banner.
+*/
+
+var subscriberKey = null;
+var tokenValid = false;
+var errorMessage = null;
+var successMessage = null;
+
+var firstName = "", emailAddress = "";
+var prefs = {
+    CategoryWomens: true, CategoryMens: true, CategoryKids: false, CategoryHome: false, CategoryBeauty: false,
+    FrequencyPreference: "Standard", PromotionalOptIn: true, SMSOptIn: false
+};
+
+function resolveToken(token) {
+    if (!token || token.length < 10) return null;
+    var rows = Platform.Function.LookupRows("CloudPage_AccessToken", "Token", token);
+    if (rows.length === 0) return null;
+    var row = rows[0];
+    var expiration = new Date(row["ExpirationDate"]);
+    if (expiration < new Date()) return null;
+    return row["SubscriberKey"];
+}
+
+function loadCurrentPreferences(subKey) {
+    var subRows = Platform.Function.LookupRows("ShopStyle_Subscribers", "SubscriberKey", subKey);
+    if (subRows.length > 0) {
+        firstName = subRows[0]["FirstName"] || "";
+        emailAddress = subRows[0]["EmailAddress"] || "";
+    }
+    var prefRows = Platform.Function.LookupRows("ShopStyle_Preferences", "SubscriberKey", subKey);
+    if (prefRows.length > 0) {
+        var p = prefRows[0];
+        prefs.CategoryWomens = p["CategoryWomens"] == true || p["CategoryWomens"] == "true";
+        prefs.CategoryMens = p["CategoryMens"] == true || p["CategoryMens"] == "true";
+        prefs.CategoryKids = p["CategoryKids"] == true || p["CategoryKids"] == "true";
+        prefs.CategoryHome = p["CategoryHome"] == true || p["CategoryHome"] == "true";
+        prefs.CategoryBeauty = p["CategoryBeauty"] == true || p["CategoryBeauty"] == "true";
+        prefs.FrequencyPreference = p["FrequencyPreference"] || "Standard";
+        prefs.PromotionalOptIn = p["PromotionalOptIn"] == true || p["PromotionalOptIn"] == "true";
+        prefs.SMSOptIn = p["SMSOptIn"] == true || p["SMSOptIn"] == "true";
+    }
+}
+
+function validateSubmission(form) {
+    var validFrequencies = ["Standard", "Reduced", "EssentialOnly"];
+    if (validFrequencies.indexOf(form.frequency) === -1) {
+        return "Invalid frequency selection.";
+    }
+    return null;
+}
+
+function persistPreferences(subKey, form) {
+    var existing = Platform.Function.LookupRows("ShopStyle_Preferences", "SubscriberKey", subKey);
+    var upsertFn = existing.length > 0 ? Platform.Function.UpdateData : Platform.Function.InsertData;
+
+    upsertFn("ShopStyle_Preferences",
+        existing.length > 0 ? 1 : undefined,
+        "SubscriberKey", subKey,
+        "CategoryWomens", form.womens ? "true" : "false",
+        "CategoryMens", form.mens ? "true" : "false",
+        "CategoryKids", form.kids ? "true" : "false",
+        "CategoryHome", form.home ? "true" : "false",
+        "CategoryBeauty", form.beauty ? "true" : "false",
+        "FrequencyPreference", form.frequency,
+        "PromotionalOptIn", form.promo ? "true" : "false",
+        "SMSOptIn", form.sms ? "true" : "false",
+        "LastUpdated", Now(),
+        "UpdateSource", "PreferenceCenter"
+    );
+
+    Platform.Function.InsertData("ShopStyle_ConsentLog",
+        "ConsentLogId", Concat("PREFCTR-", subKey, "-", Platform.Function.GetCurrentTimeUnixTimestamp()),
+        "SubscriberKey", subKey,
+        "ChannelType", "Email",
+        "ConsentAction", form.promo ? "OptIn" : "OptOut",
+        "ConsentSource", "PreferenceCenter",
+        "IPAddress", Platform.Request.GetRemoteIP != null ? Platform.Request.GetRemoteIP() : "",
+        "Timestamp", Now()
+    );
+}
+
+var token = Request.GetQueryStringParameter("token");
+subscriberKey = resolveToken(token);
+tokenValid = subscriberKey !== null;
+
+if (tokenValid) {
+    loadCurrentPreferences(subscriberKey);
+
+    if (Request.Method == "POST") {
+        var form = {
+            womens: Request.GetFormField("womens") == "on",
+            mens: Request.GetFormField("mens") == "on",
+            kids: Request.GetFormField("kids") == "on",
+            home: Request.GetFormField("home") == "on",
+            beauty: Request.GetFormField("beauty") == "on",
+            frequency: Request.GetFormField("frequency"),
+            promo: Request.GetFormField("promo") == "on",
+            sms: Request.GetFormField("sms") == "on"
+        };
+
+        var validationError = validateSubmission(form);
+        if (validationError) {
+            errorMessage = validationError;
+        } else {
+            try {
+                persistPreferences(subscriberKey, form);
+                prefs = {
+                    CategoryWomens: form.womens, CategoryMens: form.mens, CategoryKids: form.kids,
+                    CategoryHome: form.home, CategoryBeauty: form.beauty,
+                    FrequencyPreference: form.frequency, PromotionalOptIn: form.promo, SMSOptIn: form.sms
+                };
+                successMessage = "Your preferences have been updated.";
+            } catch (ex) {
+                errorMessage = "We couldn't save your changes. Please try again.";
+            }
+        }
+    }
+}
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopStyle - Preference Center</title>
+  <link rel="stylesheet" href="/cloudpages/assets/css/shopstyle-cloudpages.css">
+</head>
+<body>
+  <div class="sp-header"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle"></div>
+  <div class="sp-container">
+    <% if (!tokenValid) { %>
+      <div class="sp-alert sp-alert-error">
+        This preference link has expired or is invalid. Please open the "Manage preferences" link from
+        a recent ShopStyle email, or <a href="https://shopstyleretail.com/account/login">log in to your account</a>.
+      </div>
+    <% } else { %>
+      <h1>Email Preferences</h1>
+      <p class="sp-subtitle">Manage what you hear from us, <%= firstName %> (<%= emailAddress %>)</p>
+
+      <% if (successMessage) { %><div class="sp-alert sp-alert-success"><%= successMessage %></div><% } %>
+      <% if (errorMessage) { %><div class="sp-alert sp-alert-error"><%= errorMessage %></div><% } %>
+
+      <form id="prefForm" method="POST" action="?token=<%= token %>">
+        <div class="sp-field-group">
+          <label>Categories I'm interested in</label>
+          <div class="sp-checkbox-row"><input type="checkbox" id="womens" name="womens" <%= prefs.CategoryWomens ? "checked" : "" %>><label for="womens">Women's</label></div>
+          <div class="sp-checkbox-row"><input type="checkbox" id="mens" name="mens" <%= prefs.CategoryMens ? "checked" : "" %>><label for="mens">Men's</label></div>
+          <div class="sp-checkbox-row"><input type="checkbox" id="kids" name="kids" <%= prefs.CategoryKids ? "checked" : "" %>><label for="kids">Kids</label></div>
+          <div class="sp-checkbox-row"><input type="checkbox" id="home" name="home" <%= prefs.CategoryHome ? "checked" : "" %>><label for="home">Home</label></div>
+          <div class="sp-checkbox-row"><input type="checkbox" id="beauty" name="beauty" <%= prefs.CategoryBeauty ? "checked" : "" %>><label for="beauty">Beauty</label></div>
+        </div>
+
+        <div class="sp-field-group">
+          <label for="frequency">Email frequency</label>
+          <select id="frequency" name="frequency" data-validate required>
+            <option value="Standard" <%= prefs.FrequencyPreference == "Standard" ? "selected" : "" %>>Standard (as things happen)</option>
+            <option value="Reduced" <%= prefs.FrequencyPreference == "Reduced" ? "selected" : "" %>>Reduced (weekly digest)</option>
+            <option value="EssentialOnly" <%= prefs.FrequencyPreference == "EssentialOnly" ? "selected" : "" %>>Essential only (orders &amp; account)</option>
+          </select>
+        </div>
+
+        <div class="sp-field-group">
+          <div class="sp-checkbox-row"><input type="checkbox" id="promo" name="promo" <%= prefs.PromotionalOptIn ? "checked" : "" %>><label for="promo">Promotional emails and sales</label></div>
+          <div class="sp-checkbox-row"><input type="checkbox" id="sms" name="sms" <%= prefs.SMSOptIn ? "checked" : "" %>><label for="sms">SMS text alerts</label></div>
+        </div>
+
+        <button type="submit" class="sp-btn-primary">SAVE PREFERENCES</button>
+      </form>
+
+      <p style="margin-top:24px;font-size:13px;">
+        Want to stop all emails? <a href="/subscription-management?token=<%= token %>">Manage your subscription</a>.
+      </p>
+    <% } %>
+  </div>
+  <div class="sp-footer">&copy; ShopStyle Retail. <a href="https://shopstyleretail.com/privacy">Privacy Policy</a></div>
+  <script src="/cloudpages/assets/js/form-validation.js"></script>
+  <script>ShopStyleFormValidation.init("prefForm");</script>
+</body>
+</html>

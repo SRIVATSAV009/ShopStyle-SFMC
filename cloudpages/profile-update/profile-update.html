@@ -1,0 +1,141 @@
+<script runat="server" language="javascript">
+Platform.Load("core", "1.1.1");
+
+/*
+  CloudPage: Profile Update
+  URL: https://offers.shopstyleretail.com/profile-update?token={CloudPage_AccessToken.Token}
+  Same token-resolution pattern as preference-center.html. Updates name, date of birth (used by
+  the Birthday journey, see journeys/birthday-loyalty/), and mobile number.
+*/
+
+var subscriberKey = null, tokenValid = false, errorMessage = null, successMessage = null;
+var firstName = "", lastName = "", emailAddress = "", dateOfBirth = "", mobileNumber = "";
+
+function resolveToken(token) {
+    if (!token || token.length < 10) return null;
+    var rows = Platform.Function.LookupRows("CloudPage_AccessToken", "Token", token);
+    if (rows.length === 0) return null;
+    if (new Date(rows[0]["ExpirationDate"]) < new Date()) return null;
+    return rows[0]["SubscriberKey"];
+}
+
+function loadProfile(subKey) {
+    var rows = Platform.Function.LookupRows("ShopStyle_Subscribers", "SubscriberKey", subKey);
+    if (rows.length > 0) {
+        firstName = rows[0]["FirstName"] || "";
+        lastName = rows[0]["LastName"] || "";
+        emailAddress = rows[0]["EmailAddress"] || "";
+        dateOfBirth = rows[0]["DateOfBirth"] ? formatDateForInput(rows[0]["DateOfBirth"]) : "";
+        mobileNumber = rows[0]["MobileNumber"] || "";
+    }
+}
+
+function formatDateForInput(d) {
+    var date = new Date(d);
+    var mm = String(date.getMonth() + 1).padStart(2, "0");
+    var dd = String(date.getDate()).padStart(2, "0");
+    return date.getFullYear() + "-" + mm + "-" + dd;
+}
+
+function validateProfileForm(form) {
+    if (!form.firstName || form.firstName.trim() === "") return "First name is required.";
+    if (form.dateOfBirth) {
+        var dob = new Date(form.dateOfBirth);
+        var today = new Date();
+        var age = today.getFullYear() - dob.getFullYear();
+        if (dob > today) return "Date of birth cannot be in the future.";
+        if (age > 120) return "Please enter a valid date of birth.";
+    }
+    if (form.mobileNumber && !/^\+?[0-9]{10,15}$/.test(form.mobileNumber.replace(/[\s()-]/g, ""))) {
+        return "Please enter a valid mobile number.";
+    }
+    return null;
+}
+
+var token = Request.GetQueryStringParameter("token");
+subscriberKey = resolveToken(token);
+tokenValid = subscriberKey !== null;
+
+if (tokenValid) {
+    loadProfile(subscriberKey);
+
+    if (Request.Method == "POST") {
+        var form = {
+            firstName: Request.GetFormField("firstName"),
+            lastName: Request.GetFormField("lastName"),
+            dateOfBirth: Request.GetFormField("dateOfBirth"),
+            mobileNumber: Request.GetFormField("mobileNumber")
+        };
+        var validationError = validateProfileForm(form);
+        if (validationError) {
+            errorMessage = validationError;
+        } else {
+            try {
+                Platform.Function.UpdateData("ShopStyle_Subscribers", 1,
+                    "SubscriberKey", subscriberKey,
+                    "FirstName", form.firstName,
+                    "LastName", form.lastName,
+                    "DateOfBirth", form.dateOfBirth ? form.dateOfBirth : "",
+                    "MobileNumber", form.mobileNumber,
+                    "LastModifiedDate", Now()
+                );
+                firstName = form.firstName; lastName = form.lastName;
+                dateOfBirth = form.dateOfBirth; mobileNumber = form.mobileNumber;
+                successMessage = "Your profile has been updated.";
+            } catch (ex) {
+                errorMessage = "We couldn't save your changes. Please try again.";
+            }
+        }
+    }
+}
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopStyle - Update Profile</title>
+  <link rel="stylesheet" href="/cloudpages/assets/css/shopstyle-cloudpages.css">
+</head>
+<body>
+  <div class="sp-header"><img src="https://images.shopstyleretail.com/logo/shopstyle-white.png" alt="ShopStyle"></div>
+  <div class="sp-container">
+    <% if (!tokenValid) { %>
+      <div class="sp-alert sp-alert-error">This link has expired. Please open a recent email from ShopStyle to update your profile.</div>
+    <% } else { %>
+      <h1>Update Your Profile</h1>
+      <p class="sp-subtitle"><%= emailAddress %></p>
+
+      <% if (successMessage) { %><div class="sp-alert sp-alert-success"><%= successMessage %></div><% } %>
+      <% if (errorMessage) { %><div class="sp-alert sp-alert-error"><%= errorMessage %></div><% } %>
+
+      <form id="profileForm" method="POST" action="?token=<%= token %>">
+        <div class="sp-field-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" value="<%= firstName %>" data-validate required>
+          <span class="sp-error-message" id="firstName-error"></span>
+        </div>
+        <div class="sp-field-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" name="lastName" value="<%= lastName %>">
+        </div>
+        <div class="sp-field-group">
+          <label for="dateOfBirth">Date of Birth</label>
+          <input type="date" id="dateOfBirth" name="dateOfBirth" value="<%= dateOfBirth %>" data-validate data-max-today="true">
+          <span class="sp-error-message" id="dateOfBirth-error"></span>
+          <p style="font-size:12px;color:#767676;margin:6px 0 0;">We'll send you a birthday treat &#127874;</p>
+        </div>
+        <div class="sp-field-group">
+          <label for="mobileNumber">Mobile Number</label>
+          <input type="tel" id="mobileNumber" name="mobileNumber" value="<%= mobileNumber %>" data-validate>
+          <span class="sp-error-message" id="mobileNumber-error"></span>
+        </div>
+        <button type="submit" class="sp-btn-primary">SAVE CHANGES</button>
+      </form>
+    <% } %>
+  </div>
+  <div class="sp-footer">&copy; ShopStyle Retail. <a href="https://shopstyleretail.com/privacy">Privacy Policy</a></div>
+  <script src="/cloudpages/assets/js/form-validation.js"></script>
+  <script>ShopStyleFormValidation.init("profileForm");</script>
+</body>
+</html>
