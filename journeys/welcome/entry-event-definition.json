@@ -1,0 +1,37 @@
+{
+  "eventDefinitionKey": "APIEvent-Welcome-Signup",
+  "name": "Welcome Journey - Signup API Event",
+  "description": "Fired by the ShopStyle web/app signup form immediately after a new subscriber record is created. See api/rest/event-signup.md for the calling contract.",
+  "type": "APIEvent",
+  "eventDefinitionId": "b3f1c2a0-4e7a-4c9b-9a1e-welcome0001",
+  "dataExtensionName": "Welcome_Journey_Entry",
+  "isVisibleInPicker": true,
+  "mode": "Production",
+  "arguments": {
+    "criteria": "",
+    "filterDefinitionId": null
+  },
+  "schema": {
+    "fields": [
+      { "name": "SubscriberKey", "type": "Text", "required": true, "isEntryPointField": true },
+      { "name": "EmailAddress", "type": "EmailAddress", "required": true },
+      { "name": "FirstName", "type": "Text", "required": false },
+      { "name": "SignupSource", "type": "Text", "required": false, "notes": "Web | MobileApp | InStoreKiosk | SocialLogin" },
+      { "name": "SignupDate", "type": "Date", "required": true },
+      { "name": "PromoCodeIssued", "type": "Text", "required": false, "notes": "Welcome discount code generated at signup, e.g. WELCOME15" }
+    ]
+  },
+  "dataExtension": {
+    "name": "Welcome_Journey_Entry",
+    "customerKey": "DE_WELCOME_JOURNEY_ENTRY",
+    "description": "Journey entry staging DE for the API Event trigger. The REST call in api/rest/event-signup.md writes here via POST /interaction/v1/events, which SFMC then reads into the journey.",
+    "fields": [
+      { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+      { "name": "EmailAddress", "type": "EmailAddress", "isRequired": true },
+      { "name": "FirstName", "type": "Text", "length": 100 },
+      { "name": "SignupSource", "type": "Text", "length": 30 },
+      { "name": "SignupDate", "type": "Date", "isRequired": true },
+      { "name": "PromoCodeIssued", "type": "Text", "length": 30 }
+    ]
+  }
+}

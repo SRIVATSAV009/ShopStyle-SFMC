@@ -1,0 +1,172 @@
+{
+  "key": "JOURNEY_WELCOME_SHOPSTYLE_US",
+  "name": "Welcome Journey - ShopStyle US",
+  "description": "3-touch welcome series triggered by API event on signup. Personalizes by category preference and channel opt-in, exits on unsubscribe/suppression or full completion.",
+  "version": 1,
+  "workflowApiVersion": 1.0,
+  "triggers": [
+    {
+      "key": "TRIGGER-1",
+      "type": "APIEvent",
+      "name": "Welcome Signup Entry",
+      "eventDefinitionKey": "APIEvent-Welcome-Signup",
+      "eventDefinitionId": "b3f1c2a0-4e7a-4c9b-9a1e-welcome0001"
+    }
+  ],
+  "entryMode": "MultipleEntries",
+  "reEntryMode": "NoReentryUntilExit",
+  "goals": [
+    { "name": "First Purchase Within 14 Days", "type": "Engagement", "definition": "ShopStyle_Orders.OrderDate between journey entry and entry+14d" }
+  ],
+  "exitCriteria": {
+    "type": "SQLQuery",
+    "description": "Exit immediately if the subscriber unsubscribes, is added to global suppression, or their EmailOptIn flips to false at any point in the journey.",
+    "query": "SELECT SubscriberKey FROM ShopStyle_Subscribers WHERE SubscriberStatus = 'Unsubscribed' OR EmailOptIn = 0"
+  },
+  "activities": [
+    {
+      "key": "WAIT-INITIAL",
+      "type": "Wait",
+      "name": "Wait 1 Hour (allow profile sync)",
+      "configurationArguments": { "waitDuration": 1, "waitUnit": "Hours" },
+      "outcomes": [{ "next": "DECISION-CHANNEL" }]
+    },
+    {
+      "key": "DECISION-CHANNEL",
+      "type": "MultiCriteriaDecision",
+      "name": "Channel Opt-In Split",
+      "configurationArguments": {
+        "branches": [
+          { "name": "Email+SMS", "criteria": "EmailOptIn = true AND SMSOptIn = true" },
+          { "name": "EmailOnly", "criteria": "EmailOptIn = true AND SMSOptIn = false" },
+          { "name": "Suppressed", "criteria": "EmailOptIn = false", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "Email+SMS", "next": "EMAIL-1-WELCOME" },
+        { "branchName": "EmailOnly", "next": "EMAIL-1-WELCOME" },
+        { "branchName": "Suppressed", "next": "EXIT-SUPPRESSED" }
+      ]
+    },
+    {
+      "key": "EMAIL-1-WELCOME",
+      "type": "EmailSend",
+      "name": "Welcome Email 1 - Introduction + Promo Code",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WELCOME_01",
+        "emailAssetPath": "../../email-templates/welcome/welcome-email-1.html",
+        "sendClassification": "Default Transactional Send Classification",
+        "subjectLine": "Welcome to ShopStyle, {{Contact.Attribute.\"ShopStyle_Subscribers\".\"FirstName\"}}! Here's 15% off",
+        "sendLogging": true
+      },
+      "outcomes": [{ "next": "SMS-1-WELCOME" }]
+    },
+    {
+      "key": "SMS-1-WELCOME",
+      "type": "MultiCriteriaDecision",
+      "name": "SMS Opt-in Check",
+      "configurationArguments": {
+        "branches": [
+          { "name": "SMSEligible", "criteria": "SMSOptIn = true" },
+          { "name": "SMSNotEligible", "criteria": "SMSOptIn = false", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "SMSEligible", "next": "SMS-SEND-WELCOME" },
+        { "branchName": "SMSNotEligible", "next": "WAIT-3-DAYS" }
+      ]
+    },
+    {
+      "key": "SMS-SEND-WELCOME",
+      "type": "SMSSend",
+      "name": "Welcome SMS",
+      "configurationArguments": {
+        "messageKey": "SMS_WELCOME_01",
+        "body": "Welcome to ShopStyle! Reply STOP to opt out. Your code WELCOME15 is good for 15% off your first order: {{shortURL}}",
+        "keywordProgram": "SHOPSTYLE"
+      },
+      "outcomes": [{ "next": "WAIT-3-DAYS" }]
+    },
+    {
+      "key": "WAIT-3-DAYS",
+      "type": "Wait",
+      "name": "Wait 3 Days",
+      "configurationArguments": { "waitDuration": 3, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-ENGAGEMENT-1" }]
+    },
+    {
+      "key": "DECISION-ENGAGEMENT-1",
+      "type": "MultiCriteriaDecision",
+      "name": "Did They Open Email 1?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "Engaged", "criteria": "EXISTS(_Open WHERE EmailName = 'EMAIL_WELCOME_01' AND SubscriberKey = Contact.SubscriberKey)" },
+          { "name": "NotEngaged", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "Engaged", "next": "EMAIL-2-BROWSE" },
+        { "branchName": "NotEngaged", "next": "EMAIL-2-REMINDER" }
+      ]
+    },
+    {
+      "key": "EMAIL-2-BROWSE",
+      "type": "EmailSend",
+      "name": "Welcome Email 2 - Personalized Category Picks",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WELCOME_02_BROWSE",
+        "emailAssetPath": "../../email-templates/welcome/welcome-email-2-browse.html",
+        "subjectLine": "Picked for you: new arrivals in your favorite categories"
+      },
+      "outcomes": [{ "next": "WAIT-4-DAYS" }]
+    },
+    {
+      "key": "EMAIL-2-REMINDER",
+      "type": "EmailSend",
+      "name": "Welcome Email 2 - Reminder + Code Still Valid",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WELCOME_02_REMINDER",
+        "emailAssetPath": "../../email-templates/welcome/welcome-email-2-browse.html",
+        "subjectLine": "Don't miss out — your 15% off code expires soon"
+      },
+      "outcomes": [{ "next": "WAIT-4-DAYS" }]
+    },
+    {
+      "key": "WAIT-4-DAYS",
+      "type": "Wait",
+      "name": "Wait 4 Days",
+      "configurationArguments": { "waitDuration": 4, "waitUnit": "Days" },
+      "outcomes": [{ "next": "DECISION-PURCHASED" }]
+    },
+    {
+      "key": "DECISION-PURCHASED",
+      "type": "MultiCriteriaDecision",
+      "name": "Did They Purchase?",
+      "configurationArguments": {
+        "branches": [
+          { "name": "Purchased", "criteria": "EXISTS(ShopStyle_Orders WHERE SubscriberKey = Contact.SubscriberKey AND OrderDate >= Journey.EntryDate)" },
+          { "name": "NotPurchased", "criteria": "true", "isElse": true }
+        ]
+      },
+      "outcomes": [
+        { "branchName": "Purchased", "next": "EXIT-CONVERTED" },
+        { "branchName": "NotPurchased", "next": "EMAIL-3-LOYALTY" }
+      ]
+    },
+    {
+      "key": "EMAIL-3-LOYALTY",
+      "type": "EmailSend",
+      "name": "Welcome Email 3 - Loyalty Program Introduction",
+      "configurationArguments": {
+        "emailTemplateKey": "EMAIL_WELCOME_03_LOYALTY",
+        "emailAssetPath": "../../email-templates/welcome/welcome-email-3-loyalty.html",
+        "subjectLine": "Earn points on every purchase — join ShopStyle Rewards"
+      },
+      "outcomes": [{ "next": "EXIT-COMPLETE" }]
+    },
+    { "key": "EXIT-CONVERTED", "type": "JourneyExit", "name": "Exit - Converted to Purchase", "outcomes": [] },
+    { "key": "EXIT-COMPLETE", "type": "JourneyExit", "name": "Exit - Series Complete", "outcomes": [] },
+    { "key": "EXIT-SUPPRESSED", "type": "JourneyExit", "name": "Exit - Suppressed/Opted Out", "outcomes": [] }
+  ],
+  "entryOutcome": { "next": "WAIT-INITIAL" }
+}
