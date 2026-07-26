@@ -1,0 +1,39 @@
+{
+  "$schema": "./schemas/roles.schema.json",
+  "roles": [
+    {
+      "name": "Enterprise Administrator",
+      "scope": "parent",
+      "permissions": ["Administration:Full", "Users:Full", "BusinessUnits:Full", "SenderAuthentication:Full"],
+      "assignedUsers": ["platform-owner@shopstyleretail.com"]
+    },
+    {
+      "name": "Marketing Cloud Developer",
+      "scope": "child",
+      "permissions": [
+        "Email:Full", "JourneyBuilder:Full", "AutomationStudio:Full",
+        "ContactBuilder:Full", "CloudPages:Full", "MobileConnect:Full",
+        "APIIntegration:Full"
+      ],
+      "assignedUsers": ["dev-team@shopstyleretail.com"]
+    },
+    {
+      "name": "Content Editor",
+      "scope": "child",
+      "permissions": ["Email:Edit", "CloudPages:Edit", "ContentBuilder:Edit"],
+      "assignedUsers": ["content-team@shopstyleretail.com"]
+    },
+    {
+      "name": "Marketing Cloud Viewer",
+      "scope": "child",
+      "permissions": ["Email:View", "Reports:View", "Analytics:View", "JourneyBuilder:View"],
+      "assignedUsers": ["analytics-team@shopstyleretail.com"]
+    },
+    {
+      "name": "Automation Operator",
+      "scope": "child",
+      "permissions": ["AutomationStudio:Full", "ContactBuilder:View", "FileTransfer:Full"],
+      "assignedUsers": ["data-eng@shopstyleretail.com"]
+    }
+  ]
+}
