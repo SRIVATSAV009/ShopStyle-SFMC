@@ -1,0 +1,66 @@
+%%[
+  /* Cross-Sell Recommendations — Post-Purchase Email 5
+     Recommends complementary products: same category as something purchased, but a DIFFERENT SKU,
+     in stock, and NOT already purchased in this order. In scope: Entry.OrderId, _subscriberkey */
+
+  VAR @orderId, @purchasedItems, @purchasedCount, @i, @sku, @category
+  VAR @categoryList, @purchasedSkuList, @recRows, @recCount, @j
+  VAR @recSku, @recName, @recPrice, @recSalePrice, @recImg, @recUrl
+
+  SET @orderId = AttributeValue("OrderId")
+  SET @purchasedItems = LookupOrderedRows("ShopStyle_OrderLineItems", 10, "LineItemId ASC", "OrderId", @orderId)
+  SET @purchasedCount = RowCount(@purchasedItems)
+  SET @categoryList = ""
+  SET @purchasedSkuList = ""
+
+  IF @purchasedCount > 0 THEN
+    FOR @i = 1 TO @purchasedCount DO
+      SET @sku = Field(Row(@purchasedItems, @i), "SKU")
+      SET @category = Field(Row(@purchasedItems, @i), "Category")
+      IF NOT Contains(@categoryList, @category) THEN
+        SET @categoryList = Concat(@categoryList, IIF(Empty(@categoryList), "", "|"), @category)
+      ENDIF
+      SET @purchasedSkuList = Concat(@purchasedSkuList, IIF(Empty(@purchasedSkuList), "", "|"), @sku)
+    NEXT @i
+  ENDIF
+
+  /* Use the first purchased category as the primary cross-sell driver */
+  SET @category = IIF(Empty(@categoryList), "Womens", Field(BuildRowsetFromString(@categoryList, "|"), "Value1"))
+  SET @recRows = LookupOrderedRows("Shared_ProductCatalog", 8, "AvgRating DESC", "Category", @category, "InStock", 1)
+  SET @recCount = RowCount(@recRows)
+]%%
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;">
+  <tr>
+    %%[
+      SET @j = 0
+      VAR @renderedCount
+      SET @renderedCount = 0
+    ]%%
+    %%[ IF @recCount > 0 THEN ]%%
+    %%[ FOR @j = 1 TO @recCount DO ]%%
+      %%[
+        SET @recSku = Field(Row(@recRows, @j), "SKU")
+      ]%%
+      %%[ IF NOT Contains(@purchasedSkuList, @recSku) AND @renderedCount < 4 THEN ]%%
+        %%[
+          SET @recName = Field(Row(@recRows, @j), "ProductName")
+          SET @recPrice = Field(Row(@recRows, @j), "Price")
+          SET @recSalePrice = Field(Row(@recRows, @j), "SalePrice")
+          SET @recImg = Field(Row(@recRows, @j), "ImageURL")
+          SET @recUrl = Field(Row(@recRows, @j), "ProductURL")
+          SET @renderedCount = Add(@renderedCount, 1)
+        ]%%
+        <td width="25%" style="padding:4px;vertical-align:top;text-align:center;">
+          <a href="%%=RedirectTo(Concat(@recUrl, '?utm_source=email&utm_campaign=post_purchase_crosssell&sku=', @recSku))=%%" style="text-decoration:none;color:#111;">
+            <img src="%%=v(@recImg)=%%" alt="%%=v(@recName)=%%" width="120" style="width:100%;max-width:120px;border:1px solid #eee;">
+            <p style="font-size:12px;margin:6px 0 2px;">%%=v(@recName)=%%</p>
+            <p style="font-size:12px;margin:0;color:#111;">$%%=FormatNumber(IIF(@recSalePrice > 0, @recSalePrice, @recPrice),"N2")=%%</p>
+          </a>
+        </td>
+      %%[ ENDIF ]%%
+    %%[ NEXT @j ]%%
+    %%[ ELSE ]%%
+      <td style="padding:20px;text-align:center;color:#767676;">Explore more at <a href="https://shopstyleretail.com">shopstyleretail.com</a>.</td>
+    %%[ ENDIF ]%%
+  </tr>
+</table>
