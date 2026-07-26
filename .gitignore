@@ -1,0 +1,40 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.bak
+
+# Environment / secrets — never commit real credentials
+.env
+.env.*
+!.env.example
+config/credentials.json
+config/*.key
+config/*.pem
+**/secrets/**
+
+# Build / test output
+coverage/
+dist/
+build/
+*.log
+tests/**/output/
+
+# Postman working files
+postman/*.postman_environment_local.json
+
+# Local scratch
+*.tmp
+.cache/
