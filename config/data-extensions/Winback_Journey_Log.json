@@ -1,0 +1,11 @@
+{
+  "name": "Winback_Journey_Log",
+  "customerKey": "DE_WINBACK_JOURNEY_LOG",
+  "description": "Prevents duplicate entry into the same inactivity tier; also read by the sunset-enforcement automation to determine each subscriber's series-start date.",
+  "isSendable": false,
+  "fields": [
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "InactivityTier", "type": "Text", "length": 20, "isPrimaryKey": true, "isRequired": true },
+    { "name": "EnteredDate", "type": "Date", "isRequired": true }
+  ]
+}
