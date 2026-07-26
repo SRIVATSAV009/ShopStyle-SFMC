@@ -1,0 +1,6 @@
+SubscriberKey,EmailAddress,FirstName,LastName,DateOfBirth,EmailOptIn,SMSOptIn,SubscriberStatus,BusinessUnitMID,CreatedDate
+SUB-000482913,jane.doe@example.com,Jane,Doe,1990-07-25,true,true,Active,5000011,2026-01-15
+SUB-000482914,john.smith@example.com,John,Smith,1985-03-12,true,false,Active,5000011,2026-02-01
+SUB-000482915,maria.garcia@example.com,Maria,Garcia,1978-11-02,true,true,Active,5000011,2025-06-20
+SUB-000482916,inactive.user@example.com,Alex,Kim,1995-05-30,true,false,Active,5000011,2024-01-10
+SUB-000482917,vip.customer@example.com,Taylor,Nguyen,1982-09-18,true,true,Active,5000011,2023-03-05

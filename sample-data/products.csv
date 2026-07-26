@@ -1,0 +1,8 @@
+SKU,ProductName,Category,SubCategory,Brand,Price,SalePrice,InStock,InventoryCount,AvgRating
+SKU-WM-10021,Silk Wrap Blouse,Womens,Tops,ShopStyle Studio,89.00,64.99,true,42,4.6
+SKU-WM-10088,Tailored Wide-Leg Trouser,Womens,Bottoms,ShopStyle Studio,110.00,0,true,15,4.4
+SKU-WM-10145,Cashmere Blend Cardigan,Womens,Outerwear,ShopStyle Studio,150.00,99.00,true,8,4.8
+SKU-MN-20034,Slim Fit Oxford Shirt,Mens,Tops,ShopStyle Menswear,68.00,0,true,60,4.3
+SKU-MN-20077,Wool Blend Overcoat,Mens,Outerwear,ShopStyle Menswear,220.00,175.00,true,5,4.7
+SKU-BT-30012,Everyday Leather Tote,Womens,Bags,ShopStyle Accessories,140.00,0,true,25,4.5
+SKU-BT-30045,Classic Leather Belt,Mens,Accessories,ShopStyle Menswear,45.00,0,false,0,4.1
