@@ -1,0 +1,14 @@
+{
+  "name": "shopstyle-sfmc-mock-server",
+  "version": "1.0.0",
+  "description": "Local mock implementation of the Marketing Cloud REST endpoints this program integrates with (interaction events, transactional send, data extension rowset), used for journey/API/CloudPage testing without a live SFMC sandbox.",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/server.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
