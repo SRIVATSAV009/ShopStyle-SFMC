@@ -1,0 +1,19 @@
+{
+  "name": "ShopStyle_Orders_Archive",
+  "customerKey": "DE_SHOPSTYLE_ORDERS_ARCHIVE",
+  "description": "Staging DE for orders aged out of ShopStyle_Orders (see architecture/retention-policies.md), truncate-and-load nightly, exported to the enterprise data lake then cleared.",
+  "isSendable": false,
+  "fields": [
+    { "name": "OrderId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60 },
+    { "name": "OrderDate", "type": "Date" },
+    { "name": "OrderStatus", "type": "Text", "length": 30 },
+    { "name": "OrderTotal", "type": "Decimal", "scale": 2 },
+    { "name": "Currency", "type": "Text", "length": 3 },
+    { "name": "ShippingCarrier", "type": "Text", "length": 50 },
+    { "name": "TrackingNumber", "type": "Text", "length": 60 },
+    { "name": "EstimatedDeliveryDate", "type": "Date" },
+    { "name": "ActualDeliveryDate", "type": "Date" },
+    { "name": "ArchivedDate", "type": "Date" }
+  ]
+}

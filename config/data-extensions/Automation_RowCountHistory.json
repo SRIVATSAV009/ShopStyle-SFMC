@@ -1,0 +1,11 @@
+{
+  "name": "Automation_RowCountHistory",
+  "customerKey": "DE_AUTOMATION_ROWCOUNTHISTORY",
+  "description": "Single-row-per-metric rolling history used by anomaly-detection Script Activities (e.g., validate-catalog-row-count.ssjs) to compare today's volume against the last successful run.",
+  "isSendable": false,
+  "fields": [
+    { "name": "MetricName", "type": "Text", "length": 100, "isPrimaryKey": true, "isRequired": true },
+    { "name": "MetricValue", "type": "Text", "length": 50 },
+    { "name": "RecordedDate", "type": "Date" }
+  ]
+}

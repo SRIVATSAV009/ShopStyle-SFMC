@@ -1,0 +1,13 @@
+{
+  "name": "Staging_OrderStatusFallbackQueue",
+  "customerKey": "DE_STAGING_ORDERSTATUSFALLBACKQUEUE",
+  "description": "Populated by automation-studio/sql/13-order-status-timeout-fallback.sql, drained by ssjs/automation/fire-fallback-events.ssjs.",
+  "isSendable": false,
+  "fields": [
+    { "name": "OrderId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "FallbackEventType", "type": "Text", "length": 40, "isPrimaryKey": true, "isRequired": true },
+    { "name": "Processed", "type": "Boolean", "defaultValue": "false" },
+    { "name": "ProcessedDate", "type": "Date" }
+  ]
+}

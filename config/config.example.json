@@ -1,0 +1,18 @@
+{
+  "_comment": "Template only. Copy to config/config.json (gitignored) and fill in per-environment values.",
+  "environment": "QA",
+  "businessUnits": {
+    "parent": "5000001",
+    "activeChildBU": "5000099"
+  },
+  "credentialsFile": "./credentials.json",
+  "featureFlags": {
+    "enableEinsteinSTO": false,
+    "enableDataCloudIdentityResolution": false,
+    "enableSMSChannel": true
+  },
+  "mockServer": {
+    "port": 4000,
+    "simulateLatencyMs": 150
+  }
+}

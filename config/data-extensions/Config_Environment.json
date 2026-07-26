@@ -1,0 +1,12 @@
+{
+  "name": "Config_Environment",
+  "customerKey": "DE_CONFIG_ENVIRONMENT",
+  "description": "Key/value environment configuration (API subdomains, non-secret feature flags) read by Script Activities so environment-specific values are never hard-coded. OAuth tokens/secrets are NOT stored here — see docs/security-guide.md for the credential vaulting pattern.",
+  "isSendable": false,
+  "fields": [
+    { "name": "Name", "type": "Text", "length": 100, "isPrimaryKey": true, "isRequired": true },
+    { "name": "Value", "type": "Text", "length": 500, "isRequired": true },
+    { "name": "Environment", "type": "Text", "length": 20, "notes": "Production | QA" },
+    { "name": "LastModifiedDate", "type": "Date" }
+  ]
+}

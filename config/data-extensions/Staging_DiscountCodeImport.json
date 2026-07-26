@@ -1,0 +1,11 @@
+{
+  "name": "Staging_DiscountCodeImport",
+  "customerKey": "DE_STAGING_DISCOUNTCODEIMPORT",
+  "description": "Landing zone for the nightly discount-code file import from the commerce/promotions platform (see automation-studio/file-transfer/import-discount-codes.json). Truncate-and-load each run; promoted into ShopStyle_DiscountCodePool by automation-studio/sql/12-replenish-discount-pool.sql.",
+  "isSendable": false,
+  "fields": [
+    { "name": "DiscountCode", "type": "Text", "length": 30, "isPrimaryKey": true, "isRequired": true },
+    { "name": "CampaignType", "type": "Text", "length": 30 },
+    { "name": "DiscountPercent", "type": "Number" }
+  ]
+}

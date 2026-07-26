@@ -1,0 +1,16 @@
+{
+  "name": "Automation_ErrorLog",
+  "customerKey": "DE_AUTOMATION_ERRORLOG",
+  "description": "Centralized error log written by every Script Activity across all automations (see ssjs/shared/error-logger.ssjs). Alerted on via deliverability/monitors/alert-automation.js and reviewed in docs/runbook.md.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "PeriodAfterCreate", "periodDays": 180, "action": "DeleteRecord" },
+  "fields": [
+    { "name": "ErrorLogId", "type": "Text", "length": 60, "isPrimaryKey": true, "isRequired": true },
+    { "name": "AutomationName", "type": "Text", "length": 100, "isRequired": true },
+    { "name": "ActivityName", "type": "Text", "length": 100, "isRequired": true },
+    { "name": "ErrorMessage", "type": "Text", "length": 4000 },
+    { "name": "Severity", "type": "Text", "length": 20, "defaultValue": "Error", "notes": "Warning | Error | Critical" },
+    { "name": "OccurredDate", "type": "Date", "isRequired": true },
+    { "name": "Resolved", "type": "Boolean", "defaultValue": "false" }
+  ]
+}

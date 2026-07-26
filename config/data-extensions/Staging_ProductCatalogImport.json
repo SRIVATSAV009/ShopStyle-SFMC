@@ -1,0 +1,20 @@
+{
+  "name": "Staging_ProductCatalogImport",
+  "customerKey": "DE_STAGING_PRODUCTCATALOGIMPORT",
+  "description": "Raw landing zone for the nightly product feed Import Activity, overwritten each run before validation/promotion to Shared_ProductCatalog.",
+  "isSendable": false,
+  "fields": [
+    { "name": "SKU", "type": "Text", "length": 40, "isPrimaryKey": true, "isRequired": true },
+    { "name": "ProductName", "type": "Text", "length": 200 },
+    { "name": "Category", "type": "Text", "length": 60 },
+    { "name": "SubCategory", "type": "Text", "length": 60 },
+    { "name": "Brand", "type": "Text", "length": 100 },
+    { "name": "Price", "type": "Decimal", "scale": 2 },
+    { "name": "SalePrice", "type": "Decimal", "scale": 2 },
+    { "name": "InStock", "type": "Boolean" },
+    { "name": "InventoryCount", "type": "Number" },
+    { "name": "ImageURL", "type": "Text", "length": 500 },
+    { "name": "ProductURL", "type": "Text", "length": 500 },
+    { "name": "AvgRating", "type": "Decimal", "scale": 1 }
+  ]
+}
