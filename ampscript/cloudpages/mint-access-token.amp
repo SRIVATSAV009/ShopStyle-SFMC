@@ -1,0 +1,21 @@
+%%[
+  /* Mint-Access-Token — called from any email footer link that routes to a CloudPage.
+     Usage in an email template:
+       %%=RedirectTo(Concat(@prefCenterBaseUrl, '?token=', @accessToken))=%%
+     where @accessToken is produced by this snippet. */
+
+  VAR @accessToken, @subKey, @purpose, @insertResult
+
+  SET @subKey = _subscriberkey
+  SET @purpose = "PreferenceCenter" /* override per-link: PreferenceCenter | ProfileUpdate | SubscriptionMgmt */
+  SET @accessToken = GUID()
+
+  SET @insertResult = InsertData("CloudPage_AccessToken",
+    "Token", @accessToken,
+    "SubscriberKey", @subKey,
+    "Purpose", @purpose,
+    "CreatedDate", Now(),
+    "ExpirationDate", DateAdd(Now(), 30, "D"),
+    "Used", false
+  )
+]%%

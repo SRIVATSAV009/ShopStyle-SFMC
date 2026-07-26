@@ -1,0 +1,15 @@
+{
+  "name": "CloudPage_AccessToken",
+  "customerKey": "DE_CLOUDPAGE_ACCESSTOKEN",
+  "description": "Short-lived, single-use tokens minted at email-send time so CloudPage URLs never expose raw SubscriberKey/EmailAddress in the querystring. See cloudpages/preference-center/preference-center.html and docs/security-guide.md#cloudpage-tokens.",
+  "isSendable": false,
+  "retentionPolicy": { "type": "PeriodAfterCreate", "periodDays": 7, "action": "DeleteRecord" },
+  "fields": [
+    { "name": "Token", "type": "Text", "length": 64, "isPrimaryKey": true, "isRequired": true, "notes": "Cryptographically random GUID, generated via AMPscript GUID() at send time" },
+    { "name": "SubscriberKey", "type": "Text", "length": 60, "isRequired": true },
+    { "name": "Purpose", "type": "Text", "length": 30, "notes": "PreferenceCenter | ProfileUpdate | SubscriptionMgmt" },
+    { "name": "CreatedDate", "type": "Date", "isRequired": true },
+    { "name": "ExpirationDate", "type": "Date", "isRequired": true, "notes": "CreatedDate + 30 days" },
+    { "name": "Used", "type": "Boolean", "defaultValue": "false", "notes": "Not consumed on view, only informational — tokens are reusable within their validity window since preference centers are revisited, unlike one-time confirmation links" }
+  ]
+}

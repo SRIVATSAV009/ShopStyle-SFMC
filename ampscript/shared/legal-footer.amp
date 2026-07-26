@@ -1,8 +1,17 @@
 %%[
   /* Shared legal/unsubscribe footer — include via ContentBlockByKey("Shared_BrandContentLibrary.LegalFooter_US")
      Requires: EmailAddress, SubscriberKey in scope (email send context) */
-  VAR @currentYear
+  VAR @currentYear, @prefCenterToken, @prefCenterUrl
   SET @currentYear = Format(Now(), "yyyy")
+
+  /* Mint a scoped access token for the custom Preference Center CloudPage — see
+     ampscript/cloudpages/mint-access-token.amp. The native %%unsub_center_url%% one-click
+     unsubscribe link is kept separate and unmodified for CAN-SPAM/list-unsubscribe compliance. */
+  SET @prefCenterToken = GUID()
+  SET @insertResult = InsertData("CloudPage_AccessToken",
+    "Token", @prefCenterToken, "SubscriberKey", _subscriberkey, "Purpose", "PreferenceCenter",
+    "CreatedDate", Now(), "ExpirationDate", DateAdd(Now(), 30, "D"), "Used", false)
+  SET @prefCenterUrl = Concat("https://offers.shopstyleretail.com/preference-center?token=", @prefCenterToken)
 ]%%
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#767676;">
   <tr>
@@ -12,7 +21,7 @@
       </p>
       <p style="margin:0 0 8px;">
         You're receiving this email because you subscribed at shopstyleretail.com.
-        <a href="%%unsub_center_url%%" style="color:#767676;text-decoration:underline;">Manage preferences</a>
+        <a href="%%=RedirectTo(@prefCenterUrl)=%%" style="color:#767676;text-decoration:underline;">Manage preferences</a>
         &nbsp;|&nbsp;
         <a href="%%unsub_center_url%%" style="color:#767676;text-decoration:underline;">Unsubscribe</a>
       </p>
