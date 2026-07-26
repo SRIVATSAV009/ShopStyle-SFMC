@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopStyle Marketing Performance Dashboard</title>
+<style>
+  :root {
+    --surface-1: #fcfcfb;
+    --page: #f9f9f7;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11,11,11,0.10);
+    --series-1: #2a78d6;
+    --status-good: #0ca30c;
+    --status-warning: #fab219;
+    --status-critical: #d03b3b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff; --text-secondary: #c3c2b7;
+      --muted: #898781; --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+      --series-1: #3987e5; --status-good: #0ca30c; --status-warning: #fab219; --status-critical: #e66767;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface-1: #1a1a19; --page: #0d0d0d; --text-primary: #ffffff; --text-secondary: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --baseline: #383835; --border: rgba(255,255,255,0.10);
+    --series-1: #3987e5; --status-good: #0ca30c; --status-warning: #fab219; --status-critical: #e66767;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 20px 60px; }
+  header { margin-bottom: 24px; }
+  header h1 { font-size: 22px; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+  .banner {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--text-secondary); margin-bottom: 24px;
+  }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .tile .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .tile .value { font-size: 26px; font-weight: 600; }
+  .tile .delta { font-size: 12px; margin-top: 6px; }
+  .delta-good { color: var(--status-good); }
+  .delta-bad { color: var(--status-critical); }
+  section { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+  section h2 { font-size: 15px; margin: 0 0 2px; }
+  section .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 16px; }
+  .chart { display: flex; align-items: flex-end; gap: 14px; height: 180px; padding: 0 4px; position: relative; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+  .bar { width: 100%; max-width: 46px; background: var(--series-1); border-radius: 4px 4px 0 0; position: relative; cursor: pointer; }
+  .bar-label { font-size: 11px; color: var(--text-secondary); margin-top: 8px; text-align: center; }
+  .bar-value { font-size: 11px; color: var(--text-primary); margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+  .tooltip {
+    position: absolute; background: var(--text-primary); color: var(--surface-1);
+    font-size: 11px; padding: 6px 9px; border-radius: 4px; pointer-events: none;
+    opacity: 0; transition: opacity 0.1s; white-space: nowrap; z-index: 10;
+    transform: translate(-50%, -110%);
+  }
+  .bar:hover + .bar-label { color: var(--text-primary); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
+  th { color: var(--text-secondary); font-weight: 600; }
+  .details { margin-top: 10px; }
+  .details summary { cursor: pointer; font-size: 12px; color: var(--text-secondary); }
+  footer { font-size: 11px; color: var(--muted); margin-top: 32px; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>ShopStyle Marketing Performance Dashboard</h1>
+      <p>Program-wide send performance — trailing 30 days, ShopStyle US (BU 5000011)</p>
+    </header>
+
+    <div class="banner">
+      Illustrative sample data for repository documentation purposes. In production this dashboard is
+      rendered in CRM Analytics / Tableau, fed by the SQL in
+      <code>sql/reporting/campaign-performance-summary.sql</code> and
+      <code>sql/reporting/deliverability-summary.sql</code>, refreshed daily by
+      <code>automation-studio/config/reporting-refresh-automation.json</code>.
+    </div>
+
+    <div class="tiles">
+      <div class="tile"><div class="label">Emails Sent</div><div class="value">1,284,600</div><div class="delta delta-good">&#9650; 4.2% vs prior 30d</div></div>
+      <div class="tile"><div class="label">Open Rate</div><div class="value">32.4%</div><div class="delta delta-good">&#9650; 1.1 pt</div></div>
+      <div class="tile"><div class="label">Click Rate</div><div class="value">4.8%</div><div class="delta delta-bad">&#9660; 0.3 pt</div></div>
+      <div class="tile"><div class="label">Bounce Rate</div><div class="value">0.9%</div><div class="delta delta-good">within &lt;2% guardrail</div></div>
+      <div class="tile"><div class="label">Complaint Rate</div><div class="value">0.04%</div><div class="delta delta-good">within &lt;0.1% guardrail</div></div>
+    </div>
+
+    <section>
+      <h2>Click Rate by Journey</h2>
+      <p class="subtitle">Source: campaign-performance-summary.sql, grouped by journey</p>
+      <div class="chart" id="chart-journey"></div>
+      <details class="details"><summary>View as table</summary>
+        <table>
+          <thead><tr><th>Journey</th><th>Sent</th><th>Open Rate</th><th>Click Rate</th></tr></thead>
+          <tbody id="table-journey"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <section>
+      <h2>Einstein Engagement Score Distribution</h2>
+      <p class="subtitle">Source: sql/reporting/engagement-score-distribution.sql</p>
+      <div class="chart" id="chart-score"></div>
+      <details class="details"><summary>View as table</summary>
+        <table>
+          <thead><tr><th>Score Band</th><th>Subscribers</th></tr></thead>
+          <tbody id="table-score"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <footer>ShopStyle Retail &middot; Marketing Cloud Reporting &middot; Generated for documentation purposes</footer>
+  </div>
+
+<script>
+  var journeyData = [
+    { label: "Welcome", sent: 42000, open: 41.2, click: 9.8 },
+    { label: "Abandoned Cart", sent: 118000, open: 38.5, click: 12.3 },
+    { label: "Post-Purchase", sent: 265000, open: 35.0, click: 6.1 },
+    { label: "Birthday", sent: 8400, open: 44.7, click: 11.5 },
+    { label: "Winback", sent: 96000, open: 14.2, click: 1.8 },
+    { label: "VIP Retention", sent: 1200, open: 52.3, click: 18.9 }
+  ];
+
+  var scoreData = [
+    { label: "0-19", count: 84200 },
+    { label: "20-39", count: 156300 },
+    { label: "40-59", count: 241800 },
+    { label: "60-79", count: 198500 },
+    { label: "80-100", count: 91100 }
+  ];
+
+  function renderBarChart(containerId, data, valueKey, tableBodyId, valueFormat, tableCols) {
+    var container = document.getElementById(containerId);
+    var maxVal = Math.max.apply(null, data.map(function (d) { return d[valueKey]; }));
+    var tooltip = document.createElement("div");
+    tooltip.className = "tooltip";
+    container.appendChild(tooltip);
+
+    data.forEach(function (d) {
+      var col = document.createElement("div");
+      col.className = "bar-col";
+
+      var valueLabel = document.createElement("div");
+      valueLabel.className = "bar-value";
+      valueLabel.textContent = valueFormat(d[valueKey]);
+      col.appendChild(valueLabel);
+
+      var bar = document.createElement("div");
+      bar.className = "bar";
+      var heightPct = (d[valueKey] / maxVal) * 100;
+      bar.style.height = heightPct + "%";
+      bar.addEventListener("mouseenter", function (e) {
+        tooltip.textContent = d.label + ": " + valueFormat(d[valueKey]);
+        tooltip.style.opacity = "1";
+        tooltip.style.left = (bar.offsetLeft + bar.offsetWidth / 2) + "px";
+        tooltip.style.top = bar.offsetTop + "px";
+      });
+      bar.addEventListener("mouseleave", function () { tooltip.style.opacity = "0"; });
+      col.appendChild(bar);
+
+      var label = document.createElement("div");
+      label.className = "bar-label";
+      label.textContent = d.label;
+      col.appendChild(label);
+
+      container.appendChild(col);
+    });
+
+    var tbody = document.getElementById(tableBodyId);
+    data.forEach(function (d) {
+      var tr = document.createElement("tr");
+      tr.innerHTML = tableCols(d);
+      tbody.appendChild(tr);
+    });
+  }
+
+  renderBarChart("chart-journey", journeyData, "click", "table-journey",
+    function (v) { return v.toFixed(1) + "%"; },
+    function (d) { return "<td>" + d.label + "</td><td>" + d.sent.toLocaleString() + "</td><td>" + d.open.toFixed(1) + "%</td><td>" + d.click.toFixed(1) + "%</td>"; }
+  );
+
+  renderBarChart("chart-score", scoreData, "count", "table-score",
+    function (v) { return v.toLocaleString(); },
+    function (d) { return "<td>" + d.label + "</td><td>" + d.count.toLocaleString() + "</td>"; }
+  );
+</script>
+</body>
+</html>
