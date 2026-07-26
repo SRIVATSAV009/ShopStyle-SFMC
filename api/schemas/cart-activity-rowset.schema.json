@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://shopstyleretail.com/schemas/cart-activity-rowset.schema.json",
+  "title": "Cart Activity Rowset Upsert",
+  "description": "Request body for POST /data/v1/customobjectdata/key/DE_SHOPSTYLE_CARTACTIVITY/rowset. See api/rest/cart-events.md.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["keys", "values"],
+    "properties": {
+      "keys": {
+        "type": "object",
+        "required": ["CartId"],
+        "properties": { "CartId": { "type": "string" } }
+      },
+      "values": {
+        "type": "object",
+        "required": ["SubscriberKey", "CartStatus"],
+        "properties": {
+          "SubscriberKey": { "type": "string" },
+          "CartCreatedDate": { "type": "string", "format": "date-time" },
+          "CartLastUpdatedDate": { "type": "string", "format": "date-time" },
+          "CartStatus": { "type": "string", "enum": ["Active", "Abandoned", "Converted", "Expired"] },
+          "CartTotal": { "type": "number", "minimum": 0 },
+          "ItemCount": { "type": "integer", "minimum": 0 },
+          "DiscountCode": { "type": "string" }
+        }
+      }
+    }
+  }
+}
