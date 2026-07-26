@@ -1,0 +1,213 @@
+{
+  "info": {
+    "name": "ShopStyle SFMC",
+    "description": "REST/SOAP API contracts for the ShopStyle Retail Marketing Cloud program. Run against api/mock-server (default, see the QA environment) or a real SFMC Installed Package by switching base_url/client credentials in an environment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get OAuth Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/v2/token", "host": ["{{base_url}}"], "path": ["v2", "token"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_type\": \"client_credentials\",\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('access_token present', () => pm.expect(body.access_token).to.be.a('string'));",
+                  "pm.environment.set('access_token', body.access_token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Welcome Journey",
+      "item": [
+        {
+          "name": "Trigger Signup Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/interaction/v1/events", "host": ["{{base_url}}"], "path": ["interaction", "v1", "events"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ContactKey\": \"{{subscriber_key}}\",\n  \"EventDefinitionKey\": \"APIEvent-Welcome-Signup\",\n  \"Data\": {\n    \"SubscriberKey\": \"{{subscriber_key}}\",\n    \"EmailAddress\": \"jane.doe@example.com\",\n    \"FirstName\": \"Jane\",\n    \"SignupSource\": \"Web\",\n    \"SignupDate\": \"2026-07-25T14:32:00Z\",\n    \"PromoCodeIssued\": \"WELCOME15\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('status is 202', () => pm.response.to.have.status(202));"] }
+            }
+          ]
+        },
+        {
+          "name": "Trigger Signup Event - Missing SubscriberKey (400 expected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/interaction/v1/events", "host": ["{{base_url}}"], "path": ["interaction", "v1", "events"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"EventDefinitionKey\": \"APIEvent-Welcome-Signup\",\n  \"Data\": {\n    \"EmailAddress\": \"incomplete@example.com\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('status is 400', () => pm.response.to.have.status(400));"] }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Abandoned Cart / Cart Activity Rowset",
+      "item": [
+        {
+          "name": "Upsert Cart Activity",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/data/v1/customobjectdata/key/DE_SHOPSTYLE_CARTACTIVITY/rowset",
+              "host": ["{{base_url}}"], "path": ["data", "v1", "customobjectdata", "key", "DE_SHOPSTYLE_CARTACTIVITY", "rowset"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"keys\": { \"CartId\": \"CART-88213-A\" },\n    \"values\": {\n      \"SubscriberKey\": \"{{subscriber_key}}\",\n      \"CartCreatedDate\": \"2026-07-25T10:02:00Z\",\n      \"CartLastUpdatedDate\": \"2026-07-25T10:04:12Z\",\n      \"CartStatus\": \"Active\",\n      \"CartTotal\": 214.50,\n      \"ItemCount\": 3\n    }\n  }\n]"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('status is 201', () => pm.response.to.have.status(201));"] }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Post-Purchase",
+      "item": [
+        {
+          "name": "Send Order Confirmation (Transactional)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/messaging/v1/email/messageDefinitionSends/key:ORDER_CONFIRMATION_TXN/send",
+              "host": ["{{base_url}}"], "path": ["messaging", "v1", "email", "messageDefinitionSends", "key:ORDER_CONFIRMATION_TXN", "send"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"definitionKey\": \"ORDER_CONFIRMATION_TXN\",\n  \"recipient\": {\n    \"contactKey\": \"{{subscriber_key}}\",\n    \"to\": \"jane.doe@example.com\",\n    \"attributes\": {\n      \"OrderId\": \"{{order_id}}\",\n      \"FirstName\": \"Jane\",\n      \"OrderTotal\": \"214.50\"\n    }\n  },\n  \"options\": { \"requestType\": \"ASYNC\" }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('status is 202', () => pm.response.to.have.status(202));"] }
+            }
+          ]
+        },
+        {
+          "name": "Fire Order Shipped Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/interaction/v1/events", "host": ["{{base_url}}"], "path": ["interaction", "v1", "events"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ContactKey\": \"{{subscriber_key}}\",\n  \"EventDefinitionKey\": \"APIEvent-OrderShipped\",\n  \"Data\": {\n    \"SubscriberKey\": \"{{subscriber_key}}\",\n    \"OrderId\": \"{{order_id}}\",\n    \"ShippingCarrier\": \"UPS\",\n    \"TrackingNumber\": \"1Z999AA10123456784\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('status is 202', () => pm.response.to.have.status(202));"] }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Case Escalation",
+      "item": [
+        {
+          "name": "Trigger Case Escalated Event (Fallback)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/interaction/v1/events", "host": ["{{base_url}}"], "path": ["interaction", "v1", "events"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ContactKey\": \"{{subscriber_key}}\",\n  \"EventDefinitionKey\": \"APIEvent-CaseEscalated\",\n  \"Data\": {\n    \"SubscriberKey\": \"{{subscriber_key}}\",\n    \"CaseId\": \"500XX00000AbCdEFGH\",\n    \"CaseSubject\": \"Order damaged in transit\",\n    \"CasePriority\": \"High\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": { "exec": ["pm.test('status is 202', () => pm.response.to.have.status(202));"] }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reporting / Test Utilities",
+      "item": [
+        {
+          "name": "Dump Data Extension (Mock Server Only)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/__test__/dump/ShopStyle_Subscribers",
+              "host": ["{{base_url}}"], "path": ["__test__", "dump", "ShopStyle_Subscribers"]
+            }
+          }
+        },
+        {
+          "name": "Reset Mock Server State",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{base_url}}/__test__/reset", "host": ["{{base_url}}"], "path": ["__test__", "reset"] }
+          }
+        }
+      ]
+    }
+  ]
+}
