@@ -1,0 +1,46 @@
+%%[
+  /* Discount Code Allocation — Abandoned Cart Email 2 / Email 3
+     Allocates one unused code from ShopStyle_DiscountCodePool per send, marks it used, and returns
+     it for personalization. Called with @campaignType = "AbandonedCart10" | "AbandonedCart15".
+
+     Concurrency note: UpdateData's WHERE clause (IsUsed=0 AND DiscountCode=@code) makes the
+     "claim" conditional — if two sends raced for the same row (should not happen: rows are selected
+     one at a time and pool size >> concurrent send volume per 15-min detection cycle), the losing
+     UpdateData call affects 0 rows and @allocationOK is set false, triggering the fallback branch. */
+
+  VAR @campaignType, @subKey, @candidateRows, @code, @updateResult, @allocationOK, @expirationDays
+
+  SET @subKey = _subscriberkey
+  SET @campaignType = AttributeValue("DiscountCampaignType") /* set per-email via Send Properties */
+  SET @allocationOK = false
+
+  IF @campaignType == "AbandonedCart10" THEN
+    SET @expirationDays = 7
+  ELSEIF @campaignType == "AbandonedCart15" THEN
+    SET @expirationDays = 1
+  ELSE
+    SET @expirationDays = 7
+  ENDIF
+
+  SET @candidateRows = LookupOrderedRows("ShopStyle_DiscountCodePool", 1, "DiscountCode ASC", "CampaignType", @campaignType, "IsUsed", 0)
+
+  IF RowCount(@candidateRows) > 0 THEN
+    SET @code = Field(Row(@candidateRows, 1), "DiscountCode")
+    SET @updateResult = UpdateData("ShopStyle_DiscountCodePool",
+      1, "DiscountCode", @code, "IsUsed", 0,
+      "IsUsed", true,
+      "AllocatedToSubscriberKey", @subKey,
+      "AllocatedDate", Now(),
+      "ExpirationDate", DateAdd(Now(), @expirationDays, "D")
+    )
+    IF @updateResult > 0 THEN
+      SET @allocationOK = true
+    ENDIF
+  ENDIF
+
+  IF NOT @allocationOK THEN
+    /* Fallback shared code if the pool is momentarily exhausted — logged for the ops team to
+       investigate pool replenishment (automation-studio/sql/12-replenish-discount-pool.sql) */
+    SET @code = IIF(@campaignType == "AbandonedCart15", "CARTSAVE15", "CARTSAVE10")
+  ENDIF
+]%%

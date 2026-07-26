@@ -1,0 +1,65 @@
+%%[
+  /* Abandoned Cart — Product Block Renderer
+     Uses LookupOrderedRows against the normalized cart line-item DE, then joins each SKU against
+     Shared_ProductCatalog for current price/stock (never trust the add-to-cart-time price snapshot).
+     In scope: Entry.CartId (Data-Extension-entry journey attribute), _subscriberkey */
+
+  VAR @cartId, @cartItems, @itemCount, @i, @sku, @qty, @catalogRow, @name, @price, @salePrice, @img, @url, @inStock
+
+  SET @cartId = AttributeValue("CartId")
+  SET @cartItems = LookupOrderedRows("ShopStyle_CartLineItems", 10, "AddedToCartDate DESC", "CartId", @cartId)
+  SET @itemCount = RowCount(@cartItems)
+]%%
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;">
+  %%[ IF @itemCount > 0 THEN ]%%
+  %%[ FOR @i = 1 TO @itemCount DO ]%%
+    %%[
+      SET @sku = Field(Row(@cartItems, @i), "SKU")
+      SET @qty = Field(Row(@cartItems, @i), "Quantity")
+
+      /* Re-check live price/stock rather than trusting the cart-time snapshot */
+      SET @catalogRow = LookupRows("Shared_ProductCatalog", "SKU", @sku)
+      IF RowCount(@catalogRow) > 0 THEN
+        SET @name = Field(Row(@catalogRow, 1), "ProductName")
+        SET @price = Field(Row(@catalogRow, 1), "Price")
+        SET @salePrice = Field(Row(@catalogRow, 1), "SalePrice")
+        SET @img = Field(Row(@catalogRow, 1), "ImageURL")
+        SET @url = Field(Row(@catalogRow, 1), "ProductURL")
+        SET @inStock = Field(Row(@catalogRow, 1), "InStock")
+      ELSE
+        SET @inStock = false
+      ENDIF
+    ]%%
+    %%[ IF @inStock == true THEN ]%%
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #eee;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="80" style="vertical-align:top;">
+              <img src="%%=v(@img)=%%" alt="%%=v(@name)=%%" width="72" style="width:72px;border:1px solid #eee;">
+            </td>
+            <td style="vertical-align:top;padding-left:12px;">
+              <p style="margin:0 0 4px;font-size:14px;color:#111;font-weight:bold;">%%=v(@name)=%%</p>
+              <p style="margin:0 0 4px;font-size:12px;color:#767676;">Qty: %%=v(@qty)=%%</p>
+              %%[ IF @salePrice > 0 AND @salePrice < @price THEN ]%%
+                <p style="margin:0;font-size:13px;"><span style="text-decoration:line-through;color:#999;">$%%=FormatNumber(@price,"N2")=%%</span> <span style="color:#c00;font-weight:bold;">$%%=FormatNumber(@salePrice,"N2")=%%</span></p>
+              %%[ ELSE ]%%
+                <p style="margin:0;font-size:13px;color:#111;">$%%=FormatNumber(@price,"N2")=%%</p>
+              %%[ ENDIF ]%%
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    %%[ ELSE ]%%
+    <tr>
+      <td style="padding:12px 20px;border-bottom:1px solid #eee;color:#999;font-size:13px;">
+        This item is currently out of stock — check out similar styles when you complete your order.
+      </td>
+    </tr>
+    %%[ ENDIF ]%%
+  %%[ NEXT @i ]%%
+  %%[ ELSE ]%%
+  <tr><td style="padding:20px;text-align:center;color:#767676;">Your cart details have expired.</td></tr>
+  %%[ ENDIF ]%%
+</table>
